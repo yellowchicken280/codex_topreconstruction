@@ -1,0 +1,53 @@
+Design and implement a new triplet selection strategy for the top reconstruction pipeline, test it, and benchmark it against the existing five.
+
+Project root: /global/u1/v/vinny/projects/topreconstruction
+Strategy file: src/triplet_ml/select_triplets.py
+
+Background:
+  The five existing strategies are: greedy_disjoint, top1, topk, threshold, best_pair_avg_disjoint.
+  They vary in how aggressively they select triplets and whether they enforce jet disjointness.
+  From our 10k benchmark (min_score=0.1):
+    - top1 has highest purity (0.281) but lowest yield
+    - greedy_disjoint balances purity (0.277) and yield (0.60 avg/event)
+    - topk/threshold have higher yield but lower purity (0.211)
+    - best_pair_avg_disjoint is for two-top events; only covers 9.3% of events
+
+Step 1 — Read the strategy implementations:
+  Read src/triplet_ml/select_triplets.py to understand:
+  - The function signature that all strategies share
+  - The STRATEGIES dict where they are registered
+  - How candidates are structured (dict with 'score', jet indices, etc.)
+
+Step 2 — Design a new strategy. Suggested starting point:
+  "mass_window_disjoint": like greedy_disjoint, but additionally requires the reconstructed
+  triplet mass (m123) to fall within a window around the top quark mass (~172 GeV, say 100–250 GeV).
+  This uses physics knowledge to filter out geometrically plausible but physically implausible triplets.
+  Alternatively, propose your own strategy based on what you see in the score and feature distributions.
+
+Step 3 — Implement the strategy:
+  - Add the function to select_triplets.py
+  - Register it in the STRATEGIES dict
+  - The m123 feature is available in the inference parquet as 'm123'
+  - Verify the implementation compiles: conda run -n topml python -c "from triplet_ml import select_triplets"
+
+Step 4 — Run the new strategy:
+  conda run -n topml python -m triplet_ml select_triplets \
+    --inference artifacts/run_10000/infer/inference_test_xgb.parquet \
+    --output-dir artifacts/run_10000/select_<new_strategy_name> \
+    --strategy <new_strategy_name> \
+    --min-score 0.1 \
+    --max-top-per-event 4 \
+    --skip-plots
+
+Step 5 — Compute purity and coverage for the new strategy and compare against all five
+  existing strategies. Write a report to artifacts/run_10000/new_strategy_report.md with:
+  - Strategy description and motivation
+  - Purity, coverage, avg selected/event
+  - Comparison table with all six strategies
+  - Conclusion: does the new strategy improve on the best existing one, and under what conditions?
+
+Notes:
+- After patching select_triplets.py, verify with a quick import before running the full pipeline.
+- The function receives candidates already filtered by min_score; enforce the mass window on top of that.
+- Preserve the existing STRATEGIES dict entries — only add, do not remove or rename.
+- If inference parquet does not exist yet, run prompts/01_orchestrate.txt first.

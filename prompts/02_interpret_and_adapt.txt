@@ -1,0 +1,135 @@
+Optimize the min_score threshold for the greedy_disjoint strategy and produce a report
+comparing purity and coverage across thresholds.
+
+Produce: artifacts/adaptation_report.md and artifacts/adaptation_report.json
+
+Baseline from prior run (do NOT re-read these files — use these numbers directly):
+  AUC = 0.8352
+  Signal score mean = 0.117, Background score mean = 0.038, Max score = 0.527
+  greedy_disjoint at min_score=0.1: coverage=52.5%, purity=0.277, avg_sel=0.595
+
+---
+
+STEP 1: Write work/sweep.py and run it. This single script runs all select_triplets commands
+AND computes the metrics. Do not skip the subprocess calls — they create the directories
+that the analysis reads.
+
+  write_text("work/sweep.py") with this content:
+
+    import subprocess, sys, json
+    import pyarrow.parquet as pq
+    import numpy as np
+
+    PROJ = "/global/u1/v/vinny/projects/topreconstruction"
+    INFER = f"{PROJ}/artifacts/run_10000/infer/inference_test_xgb.parquet"
+    BASE_CMD = [
+        "conda", "run", "-n", "topml", "python", "-m", "triplet_ml", "select_triplets",
+        "--inference", INFER,
+        "--max-top-per-event", "4",
+        "--strategy", "greedy_disjoint",
+        "--skip-plots",
+    ]
+
+    SWEEP = [
+        ("0.05", f"{PROJ}/artifacts/run_10000/select_gd_s005"),
+        ("0.08", f"{PROJ}/artifacts/run_10000/select_gd_s008"),
+        ("0.15", f"{PROJ}/artifacts/run_10000/select_gd_s015"),
+        ("0.20", f"{PROJ}/artifacts/run_10000/select_gd_s020"),
+        ("0.30", f"{PROJ}/artifacts/run_10000/select_gd_s030"),
+    ]
+
+    # ── STEP 1: run each select_triplets command ──────────────────────────────
+    for score, outdir in SWEEP:
+        cmd = BASE_CMD + ["--min-score", score, "--output-dir", outdir]
+        print(f"Running min_score={score} ...", flush=True)
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            print(f"  FAILED (rc={result.returncode})")
+            print(result.stderr[-2000:])
+            sys.exit(1)
+        print(f"  OK -> {outdir}")
+
+    # ── STEP 2: load inference parquet for purity join ────────────────────────
+    infer = pq.read_table(INFER)
+    lookup = {(e,i,j,k): t for e,i,j,k,t in zip(
+        infer["event_id"].to_pylist(), infer["i"].to_pylist(),
+        infer["j"].to_pylist(), infer["k"].to_pylist(), infer["is_truth"].to_pylist())}
+
+    configs = [
+        ("0.05", "select_gd_s005"),
+        ("0.08", "select_gd_s008"),
+        ("0.10", "select_greedy_disjoint"),  # baseline from prior run
+        ("0.15", "select_gd_s015"),
+        ("0.20", "select_gd_s020"),
+        ("0.30", "select_gd_s030"),
+    ]
+
+    rows = []
+    for thresh, dirname in configs:
+        r = json.load(open(f"{PROJ}/artifacts/run_10000/{dirname}/selection_report.json"))
+        sel = pq.read_table(f"{PROJ}/artifacts/run_10000/{dirname}/selected_triplets.parquet")
+        keys = list(zip(sel["event_id"].to_pylist(), sel["i"].to_pylist(),
+                        sel["j"].to_pylist(), sel["k"].to_pylist()))
+        is_t = np.array([lookup.get(k, -1) for k in keys])
+        n_truth = int((is_t==1).sum()); n_total = int(len(is_t))
+        purity = round(n_truth/n_total, 4) if n_total > 0 else 0
+        cov = r["events_with_selection"]/r["events_total"]
+        rows.append({
+            "min_score": thresh,
+            "coverage_pct": round(cov*100, 1),
+            "avg_selected_per_event": round(r["avg_selected_per_event"], 4),
+            "selected_rows_total": r["selected_rows_total"],
+            "truth_triplets_selected": n_truth,
+            "purity": purity,
+            "f1_proxy": round(2*purity*cov/(purity+cov+1e-9), 4)
+        })
+
+    best = max(rows, key=lambda x: x["f1_proxy"])
+
+    result = {
+        "strategy": "greedy_disjoint",
+        "baseline_min_score": "0.10",
+        "baseline_auc": 0.8352,
+        "threshold_sweep": rows,
+        "recommended_min_score": best["min_score"],
+        "recommendation_reason": f"Highest F1-proxy (purity x coverage balance) = {best['f1_proxy']}"
+    }
+
+    with open(f"{PROJ}/artifacts/run_10000/adaptation_report.json", "w") as f:
+        json.dump(result, f, indent=2)
+
+    lines = ["# Threshold Sweep: greedy_disjoint strategy", "",
+             "| min_score | Coverage | Avg sel/event | Truth sel | Purity | F1-proxy |",
+             "|---|---|---|---|---|---|"]
+    for row in rows:
+        marker = " **← baseline**" if row["min_score"] == "0.10" else (
+                 " **← recommended**" if row["min_score"] == best["min_score"] else "")
+        lines.append(f"| {row['min_score']} | {row['coverage_pct']}% | "
+                     f"{row['avg_selected_per_event']:.3f} | {row['truth_triplets_selected']} | "
+                     f"{row['purity']:.3f} | {row['f1_proxy']:.3f} |{marker}")
+    lines += ["", f"**Recommended threshold: {best['min_score']}** — {result['recommendation_reason']}"]
+
+    with open(f"{PROJ}/artifacts/run_10000/adaptation_report.md", "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+    print(json.dumps(result, indent=2))
+
+  Then run_cmd: conda run -n topml python work/sweep.py
+
+  IMPORTANT: The subprocess calls inside sweep.py run the actual select_triplets commands.
+  They will take 1-2 minutes total. Wait for the script to finish before proceeding.
+  If the script prints FAILED, stop and report the error.
+
+---
+
+STEP 2: Read back the reports and copy them to the agent artifact directory.
+
+  run_cmd: cat /global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/adaptation_report.md
+
+  write_text("artifacts/adaptation_report.md") with the content from the cat output above.
+
+  run_cmd: cat /global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/adaptation_report.json
+
+  write_text("artifacts/adaptation_report.json") with the JSON content above.
+
+Done when both artifacts/adaptation_report.md and artifacts/adaptation_report.json exist.

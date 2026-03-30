@@ -1,0 +1,14 @@
+# Python virtual environment
+agent_kit/.venv/
+
+# Agent session data (run logs, memory, intermediate artifacts)
+sessions/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Parquet / large data files
+*.parquet
+*.root

@@ -1,0 +1,126 @@
+Benchmark all five triplet selection strategies on the top quark reconstruction pipeline.
+Produce two output files: artifacts/strategy_comparison.json and artifacts/strategy_comparison.md
+
+Execute the following steps in order. Use run_cmd for shell commands. Use write_text + run_python
+for helper scripts (the Python environment is topml which has pyarrow, numpy, xgboost).
+
+---
+
+STEP 1: Check if pipeline artifacts exist.
+
+  run_cmd: ls /global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/infer/inference_test_xgb.parquet
+
+  If the file exists, skip to STEP 3.
+  If not, run STEP 2 first.
+
+---
+
+STEP 2: Run the pipeline (only if STEP 1 showed file missing).
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml make pipeline_xgb ROOT_INPUT=/global/cfs/projectdirs/atlas/haichen/top/ttbar.root MAX_EVENTS=10000 PYTHON="conda run -n topml python" --no-print-directory
+
+  This takes several minutes. Wait for it to finish.
+
+---
+
+STEP 3: Run all five select_triplets strategies.
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml python -m triplet_ml select_triplets --inference artifacts/run_10000/infer/inference_test_xgb.parquet --output-dir artifacts/run_10000/select_greedy_disjoint --strategy greedy_disjoint --min-score 0.1 --max-top-per-event 4 --skip-plots
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml python -m triplet_ml select_triplets --inference artifacts/run_10000/infer/inference_test_xgb.parquet --output-dir artifacts/run_10000/select_top1 --strategy top1 --min-score 0.1 --max-top-per-event 4 --skip-plots
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml python -m triplet_ml select_triplets --inference artifacts/run_10000/infer/inference_test_xgb.parquet --output-dir artifacts/run_10000/select_topk --strategy topk --min-score 0.1 --max-top-per-event 4 --skip-plots
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml python -m triplet_ml select_triplets --inference artifacts/run_10000/infer/inference_test_xgb.parquet --output-dir artifacts/run_10000/select_threshold --strategy threshold --min-score 0.1 --max-top-per-event 4 --skip-plots
+
+  run_cmd: cd /global/u1/v/vinny/projects/topreconstruction && conda run -n topml python -m triplet_ml select_triplets --inference artifacts/run_10000/infer/inference_test_xgb.parquet --output-dir artifacts/run_10000/select_best_pair_avg_disjoint --strategy best_pair_avg_disjoint --min-score 0.1 --max-top-per-event 4 --skip-plots
+
+---
+
+STEP 4: Write and run the analysis helper to compute all metrics and produce the two output files.
+
+  write_text("work/analyze.py") with this exact content:
+
+    import pyarrow.parquet as pq
+    import numpy as np
+    import json, datetime
+
+    PROJ = "/global/u1/v/vinny/projects/topreconstruction"
+    STRATEGIES = ["greedy_disjoint", "top1", "topk", "threshold", "best_pair_avg_disjoint"]
+
+    infer = pq.read_table(f"{PROJ}/artifacts/run_10000/infer/inference_test_xgb.parquet")
+    scores = np.array(infer["score_xgb"].to_pylist())
+    labels = np.array(infer["is_truth"].to_pylist())
+    lookup = {(e,i,j,k): t for e,i,j,k,t in zip(
+        infer["event_id"].to_pylist(), infer["i"].to_pylist(),
+        infer["j"].to_pylist(), infer["k"].to_pylist(), labels.tolist())}
+
+    thresholds = np.linspace(0, 1, 500)
+    tprs, fprs = [], []
+    for t in thresholds:
+        tp = ((scores>=t)&(labels==1)).sum(); fn = ((scores<t)&(labels==1)).sum()
+        fp = ((scores>=t)&(labels==0)).sum(); tn = ((scores<t)&(labels==0)).sum()
+        tprs.append(tp/(tp+fn) if (tp+fn)>0 else 0)
+        fprs.append(fp/(fp+tn) if (fp+tn)>0 else 0)
+    auc = float(-np.trapezoid(tprs, fprs))
+
+    results = {
+        "generated": datetime.datetime.now().isoformat(),
+        "dataset": "10k events from ttbar.root",
+        "model": "XGBoost",
+        "model_auc": round(auc, 4),
+        "signal_score_mean": round(float(scores[labels==1].mean()), 4),
+        "background_score_mean": round(float(scores[labels==0].mean()), 4),
+        "test_triplets": int(len(scores)),
+        "min_score_threshold": 0.1,
+        "max_top_per_event": 4,
+        "strategies": {}
+    }
+
+    for s in STRATEGIES:
+        r = json.load(open(f"{PROJ}/artifacts/run_10000/select_{s}/selection_report.json"))
+        sel = pq.read_table(f"{PROJ}/artifacts/run_10000/select_{s}/selected_triplets.parquet")
+        keys = list(zip(sel["event_id"].to_pylist(), sel["i"].to_pylist(),
+                        sel["j"].to_pylist(), sel["k"].to_pylist()))
+        is_t = np.array([lookup.get(k, -1) for k in keys])
+        n_truth = int((is_t==1).sum()); n_total = int(len(is_t))
+        results["strategies"][s] = {
+            "events_total": r["events_total"],
+            "events_with_selection": r["events_with_selection"],
+            "coverage_pct": round(r["events_with_selection"]/r["events_total"]*100, 1),
+            "avg_selected_per_event": round(r["avg_selected_per_event"], 4),
+            "selected_rows_total": r["selected_rows_total"],
+            "truth_triplets_selected": n_truth,
+            "purity": round(n_truth/n_total, 4) if n_total > 0 else 0,
+        }
+
+    with open(f"{PROJ}/artifacts/run_10000/strategy_comparison.json", "w") as f:
+        json.dump(results, f, indent=2)
+
+    lines = ["# Strategy Comparison (10k events, XGBoost AUC={:.4f})".format(auc), ""]
+    lines += ["| Strategy | Coverage | Avg sel/event | Total sel | Truth sel | Purity |",
+              "|---|---|---|---|---|---|"]
+    for s, v in results["strategies"].items():
+        lines.append(f"| {s} | {v['coverage_pct']}% | {v['avg_selected_per_event']:.3f} | "
+                     f"{v['selected_rows_total']} | {v['truth_triplets_selected']} | {v['purity']:.3f} |")
+    with open(f"{PROJ}/artifacts/run_10000/strategy_comparison.md", "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+    print("Done. Results:")
+    print(json.dumps(results, indent=2))
+
+  Then run_python("work/analyze.py")
+
+---
+
+STEP 5: Read the output files and write them to the agent artifact directory so they are
+  captured as run artifacts.
+
+  read_text the strategy_comparison.json from the topreconstruction directory using run_cmd:
+    run_cmd: cat /global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/strategy_comparison.json
+
+  Then write_text("artifacts/strategy_comparison.json") with the contents.
+  Then write_text("artifacts/strategy_comparison.md") with the markdown table.
+
+The run is complete when both artifacts/strategy_comparison.json and artifacts/strategy_comparison.md
+exist in the agent workspace.
