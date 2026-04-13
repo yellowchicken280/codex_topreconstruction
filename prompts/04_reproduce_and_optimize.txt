@@ -1,0 +1,63 @@
+# Top Quark Reconstruction — Strategy Optimization Harness
+
+## Mission
+
+Maximize hadronic top-quark triplet reconstruction efficiency on the held-out
+evaluation set. The current best known result is ~62-63% efficiency, achieved
+by a separate correctly-implemented pipeline (documented in write-up). This
+result is real and achievable. Your goal is to reproduce it then beat it.
+
+---
+
+## CRITICAL: Efficiency definition — do not reinterpret this
+
+Efficiency = (number of selected triplets that are truth-matched) /
+             (total number of truth-matched triplets in the evaluation set)
+
+Both numerator and denominator count TRIPLETS, not events.
+
+The denominator is the total count of truth-matched triplets across all
+evaluation events — which is EXACTLY 1026 for the 2000-event evaluation set.
+
+If your eval script divides by number of events (2000) instead of number of
+truth-matched triplets, it is wrong. The denominator must be 1026.
+
+The ~63% figure from the write-up is correctly computed under this definition.
+It is not a bug. It is your target.
+
+---
+
+## Absolute constraints
+
+1. **Disjoint selection is mandatory.** Within each event, no two selected
+   triplets may share any jet index.
+
+2. **Do not retrain or modify the BDT model.** Reuse the existing model artifact.
+
+3. **Evaluate on the first 2000 events of test.parquet only.**
+
+4. **Denominator is fixed at 1026.**
+
+---
+
+## State of knowledge — verified results from this model
+
+| Strategy | Combined score formula | Best params | Efficiency |
+|----------|----------------------|-------------|------------|
+| greedy_disjoint | raw BDT score | — | 0.4337 |
+| mass_gaussian_disjoint | score × top_gauss | m_t=160, σ_t=17 | 0.5741 |
+| iteration13 | score^γ × top_gauss × w_gauss | m_t=160, σ_t=25, γ=1.0, w_σ=15 | 0.5975 |
+
+---
+
+## Your Task
+
+1.  **Reproduce results.** Run `eval_efficiency.py` for all strategies.
+    Confirm that `iteration13` gives 0.5975 and `greedy_disjoint` gives ~0.43.
+    Use `conda run -n topml python eval_efficiency.py --infer-dir artifacts/run_10000/infer --test artifacts/run_10000/dataset_prepare/test.parquet --denominator 1026`
+
+2.  **Optimize.** Based on the results, propose a new strategy or parameter set.
+    Note that for this model, $\gamma=1.0$ and $\sigma_W=15$ performed better than Claude's suggestions.
+    Explore why. Maybe try an asymmetric top-mass prior.
+
+3.  **Log everything.** Update `labbook.md` with your findings.

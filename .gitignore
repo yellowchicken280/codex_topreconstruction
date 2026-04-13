@@ -3,6 +3,8 @@ agent_kit/.venv/
 
 # Agent session data (run logs, memory, intermediate artifacts)
 sessions/
+*.log
+*.pdf
 
 # Python cache
 __pycache__/
