@@ -4,7 +4,7 @@ agent_kit/.venv/
 # Agent session data (run logs, memory, intermediate artifacts)
 sessions/
 *.log
-*.pdf
+#*.pdf
 
 # Python cache
 __pycache__/
@@ -14,3 +14,9 @@ __pycache__/
 # Parquet / large data files
 *.parquet
 *.root
+
+# Transcripts
+*transcript*.txt
+*transcript*.pdf
+HAICHEN WANG's Personal Meeting Room's transcript*.txt
+HAICHEN WANGs Personal Meeting Rooms transcript*.pdf

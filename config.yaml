@@ -1,8 +1,8 @@
 # topreco-agent config — overrides codexlikeagent defaults for the topreco pipeline
 base_url: ${OPENAI_BASE_URL}
-default_model: gpt-4.1
+default_model: gpt-oss-120b
 max_iterations: 60
-max_failures_per_step: 10
+max_failures_per_step: 20
 command_timeout: 600
 enable_session_memory: true
 skill_root: /global/u1/v/vinny/projects/codexlikeagent/agent_kit/skills
@@ -16,11 +16,11 @@ max_consecutive_observation_calls: 4
 max_duplicate_observation_calls: 2
 max_blocked_tool_calls: 3
 model_map:
-  INTENT_PARSE: gpt-4.1
-  TRIAGE: gpt-4.1-mini
-  PLAN: gpt-4.1
-  CODE: gpt-4.1
-  EXECUTE_ANALYSIS: gpt-4.1
-  EVALUATE: gpt-4.1-mini
-  SUMMARIZE: gpt-4.1-mini
-  MEMORY_COMPACT: gpt-4.1-mini
+  INTENT_PARSE: lbl/Llama-4-Scout-17B-16E-Instruct
+  TRIAGE: lbl/gpt-oss-120b
+  PLAN: lbl/gpt-oss-120b-high
+  CODE: lbl/gpt-oss-120b-high
+  EXECUTE_ANALYSIS: lbl/gpt-oss-120b-high
+  EVALUATE: lbl/gpt-oss-120b-high
+  SUMMARIZE: lbl/gpt-oss-120b-high
+  MEMORY_COMPACT: lbl/gpt-oss-120b

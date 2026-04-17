@@ -1,49 +1,32 @@
-# topreco-agent
+# Top Quark Reconstruction - Agentic Strategy Optimization
 
-A thin wrapper that runs [codexlikeagent](https://github.com/yellowchicken280/codexlikeagent) against the top quark reconstruction pipeline. This project uses AI agents to autonomously optimize physics selection strategies for hadronic top-quark reconstruction.
+This repository contains an autonomous discovery harness for optimizing hadronic top-quark reconstruction. It utilizes high-context reasoning models (lbl/gpt-oss-120b-high) to devise, implement, and evaluate physics-informed selection strategies.
 
----
+## 🚀 Current Status: MARATHON ACTIVE
+- **Current Best Efficiency:** **0.6412** (Breaking the 0.63 plateau)
+- **Total Iterations:** 645+
+- **Architecture:** Harness v8.0 (Discovery Compaction Mode)
 
-## The Optimization Journey (Progression)
+## 🛠 Methodology: Discovery Compaction
+To avoid redundant strategies, the system utilizes a "Compactor" logic:
+1. **Discovery:** The agent proposes novel physics logic based on jet topology, energy fractions, and kinematic correlations.
+2. **Evaluation:** Strategies are injected directly into `select_triplets.py` and benchmarked against 2,000 truth-matched events.
+3. **Synthesis:** Every 5 iterations, a master `discovery_trajectory.md` is updated to categorize "Dead Ends" and redefine the "Physics Frontier."
+4. **Context Injection:** Future iterations read the trajectory to ensure genuinely new exploratory directions.
 
-### Phase 1: The Baseline (~43%)
-Starting with a pure BDT-score-based "Greedy Disjoint" selection, the efficiency was roughly **43.4%**. At this stage, the agent was simply learning how to interact with the pipeline.
-
-### Phase 2: The "Denominator Trap" & The 59% Plateau
-The agent began injecting physics knowledge (Gaussian mass priors). However, we hit a major roadblock:
-*   **The Mistake:** A previous iteration reported a "hallucinated" 63% efficiency. When the agent "fixed" its math, it concluded that 63% was mathematically impossible and that **59.75%** was the absolute ceiling for this model.
-*   **The Correction:** By cross-referencing with the Professor's original write-up and manual verification, we realized the denominator bug was in our *evaluation script*, not the professor's results. We locked the denominator to exactly **1026 truth triplets** (for the 2k set) to ensure rigorous, honest reporting.
-*   **Parameter Discovery:** We found that for our specific model checkpoint, raw BDT scores ($\gamma=1.0$) and a tight W-window ($\sigma_W=15$) actually outperformed the professor's suggested parameters.
-
-### Phase 3: Breaking 60% (The Greedy Trap)
-We identified that the "Greedy" algorithm was a bottleneck. If a high-score fake triplet overlaps with two slightly lower-score truth triplets, the Greedy algorithm picks the fake and loses both truths.
-*   **The Solution:** We implemented the **Exact Global Optimizer** (`iteration15_exact`). This uses a recursive search to find the combination of triplets that maximizes the *total* event score while maintaining jet-disjointness.
-*   **Result:** Successfully broke the barrier, reaching **60.04%** efficiency on the standard benchmark.
-
-### Phase 4: Scaling the Data (Ongoing)
-We've identified that the final gap to the professor's 63% is likely the **BDT Model quality**. 
-*   **The Realization:** Our current model was trained on only 2,000 events, while the professor used 10,000. 
-*   **Action:** We are currently running a **50,000 event pipeline** to generate a 10k-training/35k-test split to provide the agent with a "State-of-the-Art" model foundation.
-
----
-
-## Benchmark Comparison (Current Model)
-
-| Strategy | Efficiency | Truth Triplets Found | Notes |
+## 📈 Breakthroughs
+| Iteration | Strategy | Efficiency | Key Insight |
 | :--- | :--- | :--- | :--- |
-| **greedy_disjoint** | 43.37% | 445 / 1026 | Baseline |
-| **mass_gaussian_wmass** | 57.80% | 593 / 1026 | Professor's Param Sweep |
-| **iteration13 (Greedy)** | 59.75% | 613 / 1026 | Agent-tuned Plateau |
-| **iteration15 (Exact)** | **60.04%** | **616 / 1026** | **Current Record** |
+| 0 | baseline_bdt | 0.4437 | Raw XGBoost Score |
+| 3 | asymmetric_v3 | 0.6160 | Asymmetric mass windows + pT scaling |
+| 11 | topology_v3 | 0.6384 | Energy fraction variance weighting |
+| 638 | jet_veto_v1 | **0.6412** | Multi-stage kinematic vetoes |
+
+## 📂 Project Structure
+- `select_triplets.py`: The core physics engine (dynamically patched by the agent).
+- `labbook.md`: Detailed log of every attempt and efficiency result.
+- `discovery_trajectory.md`: Living summary of the scientific search space.
+- `marathon_harness.py`: The background discovery loop.
 
 ---
-
-## Technical Features
-- **Recursive Subset Optimization:** Solves the Maximum Weight Independent Set problem for triplet selection.
-- **Physics Priors:** Multiplicative Gaussian penalties for Top and W mass consistency.
-- **Automated Harness:** Prevents agent hallucinations by locking evaluation metrics and denominators.
-
-## Usage
-```bash
-./run.sh prompts/04_reproduce_and_optimize.txt   # Run the latest optimization harness
-```
+*Optimizing for the L1 Trigger Latency Budget (<80ns).*
