@@ -3,35 +3,45 @@ import os
 import sys
 
 truth_path = "/global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/dataset_prepare/test.parquet"
-n_total_truth = 1026 # verified for first 2000 events
 
 def evaluate(selected_path):
     if not os.path.exists(selected_path):
         return 0.0
     
-    # Load truth (first 2000 events)
-    truth_table = pq.read_table(truth_path, columns=["event_id", "i", "j", "k", "is_truth"])
-    eids = truth_table["event_id"].to_pylist()
-    is_truth = truth_table["is_truth"].to_pylist()
-    ii = truth_table["i"].to_pylist()
-    jj = truth_table["j"].to_pylist()
-    kk = truth_table["k"].to_pylist()
+    # 1. Determine the first 2000 event IDs
+    truth_table_all = pq.read_table(truth_path, columns=["event_id"])
+    all_eids = truth_table_all["event_id"].to_pylist()
     
-    seen = set()
-    ordered_ids = []
+    seen_eids = set()
+    first_2k_ordered = []
+    for eid in all_eids:
+        if eid not in seen_eids:
+            seen_eids.add(eid)
+            first_2k_ordered.append(eid)
+            if len(first_2k_ordered) >= 2000:
+                break
+    
+    eval_eids_set = set(first_2k_ordered)
+    
+    # 2. Get truth triplets and denominator for these 2000 events
+    truth_table = pq.read_table(truth_path)
+    tr_eids = truth_table["event_id"].to_pylist()
+    tr_truth = truth_table["is_truth"].to_pylist()
+    tr_i = truth_table["i"].to_pylist()
+    tr_j = truth_table["j"].to_pylist()
+    tr_k = truth_table["k"].to_pylist()
+    
     truth_by_event = {}
-    for idx in range(len(eids)):
-        eid = int(eids[idx])
-        if eid not in seen:
-            seen.add(eid)
-            if len(ordered_ids) < 2000:
-                ordered_ids.append(eid)
-        if int(is_truth[idx]) == 1:
-            truth_by_event.setdefault(eid, set()).add(frozenset([int(ii[idx]), int(jj[idx]), int(kk[idx])]))
-
-    # Load selected
+    n_total_truth = 0
+    for idx in range(len(tr_eids)):
+        eid = int(tr_eids[idx])
+        if eid in eval_eids_set and int(tr_truth[idx]) == 1:
+            truth_by_event.setdefault(eid, set()).add(frozenset([int(tr_i[idx]), int(tr_j[idx]), int(tr_k[idx])]))
+            n_total_truth += 1
+            
+    # 3. Evaluate selections
     try:
-        sel_table = pq.read_table(selected_path, columns=["event_id", "i", "j", "k"])
+        sel_table = pq.read_table(selected_path)
         sel_eids = sel_table["event_id"].to_pylist()
         sel_i = sel_table["i"].to_pylist()
         sel_j = sel_table["j"].to_pylist()
@@ -42,11 +52,12 @@ def evaluate(selected_path):
     n_correct = 0
     for idx in range(len(sel_eids)):
         eid = int(sel_eids[idx])
-        if eid not in truth_by_event: continue
-        triplet = frozenset([int(sel_i[idx]), int(sel_j[idx]), int(sel_k[idx])])
-        if triplet in truth_by_event[eid]:
-            n_correct += 1
-            
+        if eid in truth_by_event:
+            triplet = frozenset([int(sel_i[idx]), int(sel_j[idx]), int(sel_k[idx])])
+            if triplet in truth_by_event[eid]:
+                n_correct += 1
+                
+    if n_total_truth == 0: return 0.0
     return n_correct / n_total_truth
 
 if __name__ == "__main__":

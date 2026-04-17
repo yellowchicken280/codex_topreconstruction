@@ -13,7 +13,6 @@ WORK_DIR = "/global/u1/v/vinny/projects/topreco-agent"
 PIPELINE_DIR = "/global/u1/v/vinny/projects/topreconstruction"
 CODE_PATH = f"{PIPELINE_DIR}/top_reco/src/triplet_ml/select_triplets.py"
 LAB_PATH = f"{WORK_DIR}/labbook.md"
-TRAJECTORY_PATH = f"{WORK_DIR}/discovery_trajectory.md"
 API_KEY = os.environ.get("OPENAI_API_KEY")
 BASE_URL = "https://api.cborg.lbl.gov/v1/chat/completions"
 MODEL = "lbl/gpt-oss-120b-high"
@@ -49,16 +48,29 @@ def run_cmd(cmd):
 
 def main():
     start_time = time.time()
-    iter_idx = 960 
+    iter_idx = 2000 # "The Honest Era"
 
-    log("=== Top Reconstruction Marathon Harness v8.3 (STABLE) ===")
+    log("=== Top Reconstruction Marathon Harness v8.7 (TRUTH MODE) ===")
 
     while (time.time() - start_time) < (MAX_HOURS * 3600):
         log(f"--- STARTING ITERATION {iter_idx} ---")
         
-        with open(CODE_PATH, "r") as f: current_code = f.read()
+        # 1. Strategy Generation
+        prompt = """You are a physicist. 
+CURRENT TRUTH: The baseline efficiency is 0.6267. 
+TASK: Devise a NOVEL strategy to break 0.64.
+RULES:
+- Use 'math.exp', 'math.log', 'math.tanh'.
+- Object 't' has: score, triplet_mass, triplet_pt, mij_ab, mij_ac, mij_bc.
+- Define 'combined_score'.
 
-        prompt = f"You are a physicist. Current best: 0.6384. Devise a NOVEL strategy distinct from mass-Gaussians. Return JSON only with 'slug' (no spaces, e.g. energy_flow_v2), 'logic', 'motivation'."
+Output JSON only:
+{
+  "slug": "honest_phys_v2000",
+  "logic": "combined_score = t.score * ...",
+  "motivation": "..."
+}
+"""
         messages = [{"role": "user", "content": prompt}]
         response = call_model(messages)
         if not response: continue
@@ -66,43 +78,50 @@ def main():
         try:
             json_text = re.search(r"\{.*\}", response, re.DOTALL).group()
             discovery = json.loads(json_text)
-            strat_name = discovery["slug"].replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "")
-            strat_logic = discovery["logic"].replace('\u2011', '-').replace('\u2013', '-')
+            strat_name = discovery["slug"].replace(" ", "_").replace("-", "_")
+            raw_logic = discovery["logic"].replace('\u2011', '-').replace('\u2013', '-')
+            logic_lines = [line.strip() for line in raw_logic.split('\n') if line.strip()]
+            strat_logic = "\n".join(["            " + line for line in logic_lines])
         except: continue
 
-        with open(CODE_PATH, "r") as f: code_content = f.read()
-        # Patch STRATEGIES tuple
-        if f'"{strat_name}"' not in code_content:
-            code_content = code_content.replace('best_pair_avg_disjoint")', f'best_pair_avg_disjoint", "{strat_name}")')
+        # 2. Reset and Inject
+        subprocess.run(f"cd {PIPELINE_DIR} && git checkout top_reco/src/triplet_ml/select_triplets.py", shell=True)
+        subprocess.run(f"agent_kit/.venv/bin/python3 {WORK_DIR}/final_patch.py", shell=True)
         
-        # Patch logic
+        with open(CODE_PATH, "r") as f: code_content = f.read()
+        code_content = code_content.replace('best_pair_avg_disjoint", "asymmetric_top_exact_v3")', 
+                                         f'best_pair_avg_disjoint", "asymmetric_top_exact_v3", "{strat_name}")')
+        
         new_block = f"""
     if strategy == "{strat_name}":
         if max_top_per_event <= 0 or len(candidates) == 0:
             return []
         scored_cands = []
         for t in candidates:
+            import math
 {strat_logic}
             new_cand = TripletCandidate(i=t.i, j=t.j, k=t.k, score=combined_score,
+                is_truth=t.is_truth,
                 triplet_pt=t.triplet_pt, triplet_eta=t.triplet_eta, triplet_phi=t.triplet_phi,
                 triplet_mass=t.triplet_mass, mij_ab=t.mij_ab, mij_ac=t.mij_ac, mij_bc=t.mij_bc)
             scored_cands.append(new_cand)
         scored_cands.sort(key=lambda t: (-t.score, t.i, t.j, t.k))
         return _solve_exact_disjoint(scored_cands, max_top=max_top_per_event)
 """
-        code_content = code_content.replace('    if strategy == "asymmetric_top_exact_v3":', new_block + '\n    if strategy == "asymmetric_top_exact_v3":')
+        code_content = code_content.replace('    if strategy == "asymmetric_top_exact_v3":', 
+                                         new_block + '\n    if strategy == "asymmetric_top_exact_v3":')
         with open(CODE_PATH, "w") as f: f.write(code_content)
         
-        # Guard
-        check = subprocess.run(f"/global/u1/v/vinny/projects/topreco-agent/agent_kit/.venv/bin/python3 -m py_compile {CODE_PATH}", shell=True, capture_output=True)
+        check = subprocess.run(f"agent_kit/.venv/bin/python3 -m py_compile {CODE_PATH}", shell=True, capture_output=True)
         if check.returncode != 0:
-            log(f"Syntax error in '{strat_name}'. Skipping.")
+            log(f"Syntax error in '{strat_name}'. skipping.\n{check.stderr.decode()}")
             continue
 
+        # 3. Evaluation
         eval_cmd = f"PYTHONPATH={PIPELINE_DIR}/top_reco/src /global/homes/v/vinny/.conda/envs/topml/bin/python -m triplet_ml select_triplets --inference {PIPELINE_DIR}/artifacts/run_prof/infer_eval/inference_test_xgb.parquet --strategy {strat_name} --output-dir artifacts/iter{iter_idx}_eval --min-score 0.0 --max-top-per-event 4 --no-progress"
         run_cmd(eval_cmd)
         
-        res_out = run_cmd(f"{WORK_DIR}/agent_kit/.venv/bin/python3 {WORK_DIR}/real_eval.py artifacts/iter{iter_idx}_eval/selected_triplets.parquet")
+        res_out = run_cmd(f"agent_kit/.venv/bin/python3 {WORK_DIR}/real_eval.py artifacts/iter{iter_idx}_eval/selected_triplets.parquet")
         if res_out:
             try:
                 new_eff = res_out.split("Efficiency: ")[1].split("\n")[0].strip()
