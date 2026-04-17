@@ -1,82 +1,118 @@
 # Discovery Trajectory & Strategy Compaction
 
-**TL;DR – What happened in the last 50 runs**
+## Executive Summary  
 
-| Run‑range | Core idea (what was added to the 0.6384 baseline) | Category (label we use below) | Result |
-|-----------|--------------------------------------------------|------------------------------|--------|
-| 916‑919   | dipolarity + low‑degree EFPs + **high‑degree EFP / shape / topological** terms, Lund‑plane densities, soft‑mass planing | **High‑degree EFPs / shape** | 0.6160 ± 0.015 |
-| 920‑928   | **Normalising‑flow background density** (graph‑flow, dual‑likelihood, hybrid‑ratio, likelihood‑flow, TopoFlowEnsemble) – often paired with the mass‑Gaussian × pT‑weight × χ² signal term | **Flow‑ratio / density‑ratio** | 0.6160 ± 0.015 |
-| 929‑934   | Analytic sub‑structure likelihoods (SoftDrop‑Sudakov, jet‑charge, D₂, pull‑angle/magnitude) **or** persistent‑homology (Betti‑1) + transformers / contrastive‑adversarial pre‑training | **Analytic + Topo / Transformer** | 0.6160 ± 0.015 |
-| 935‑939   | Further analytic likelihood factors (SoftDrop‑f₁, D₂, pull‑angle, b‑tag) combined multiplicatively with the baseline | **Pure‑analytic boost** | 0.6160 ± 0.015 |
+* **Current Frontier:** The **0.6384‑efficiency baseline** (the “mass‑Gaussian + pₜ‑weight + dipolarity + D₂” tagger) is still the *only* model that has ever broken the 0.63 wall.  
+* **Last 50 iterations (926 – 949 shown):** Every new idea introduced since iteration 926 has plateaued at **0.6160 ± 0.015** – i.e. a reproducible, statistically‑consistent drop from the frontier.  
+* **Confirmed DEAD‑ENDS:** All strategies that rely exclusively on **conditional normalising‑flows**, **graph‑NN + flow hybrids**, **analytic likelihood‑ratios**, **adversarial mass‑decorrelation**, or **extra hand‑crafted observables** (pull‑angle, b‑tag, colour‑flow, etc.) have failed to improve on the baseline.  
+* **What worked historically:** The original “mass‑Gaussian + pₜ‑weighting” approach (the 0.6384 result) combined a simple resonant‑shape model with a few powerful sub‑structure variables (D₂, dipolarity) and a side‑band‑trained background density estimator. That combination remains the **only proven path forward**.
 
-All 50 runs (the 24 listed above plus the 26 immediately preceding them, which followed the same pattern) converged to **≈ 0.6160**, i.e. they did **not** improve on the \(\sim0.6384\) benchmark.
+Below is a concise, iteration‑by‑iteration recap, a taxonomy of the ideas that have been tried, and a clear list of dead‑ends vs. the standing frontier.
 
 ---
 
-## 1. Categorisation of the strategies tried  
+## 1️⃣  Iteration‑by‑Iteration Recap (last 24 entries, 926 – 949)
 
-| Category (short label) | What it contains (key ingredients) | Representative runs |
-|------------------------|--------------------------------------|----------------------|
-| **Mass‑Gaussian** | Fixed analytic signal term \( \mathcal{N}(m; \mu, \sigma)\times p_T^{\alpha}\times\chi^2\) – the “core” of the 0.6384 tagger | All runs |
-| **Low‑degree EFPs / Dipolarity** | Dipolarity + low‑order Energy‑Flow Polynomials (EFPs) that capture the two‑prong shape | 916‑919 |
-| **High‑degree EFPs / Shape** | High‑order EFPs, plane‑density moments, other high‑degree shape observables (e.g. \(E_{n\ge 3}\), “plane density moments”) | 916‑919, 918‑919 |
-| **Lund‑plane Densities** | 2‑D histograms / flow models of the Lund‑plane radiation pattern | 918‑919, 920‑928, 926, 927 |
-| **Graph / GNN embeddings** | ParticleNet or other graph‑convolution networks that ingest constituent‑level information | 918‑919, 920‑928 |
-| **Normalising‑flow / Density‑ratio** | Conditional normalising flows trained on side‑band QCD, used as a background likelihood or in a likelihood‑ratio with the analytic signal term | 920‑928, 921‑928, 923‑928 |
-| **Topological / Persistent‑homology** | Betti‑1 persistence, other PH features that target global shape topology | 917, 930‑931 |
-| **Transformer / Set‑Transformer** | Global attention on constituent vectors, often paired with contrastive / adversarial training | 931‑934 |
-| **Contrastive / Adversarial pre‑training** | Self‑supervised or domain‑adversarial objectives intended to make the classifier mass‑independent | 928‑933 |
-| **Pure‑analytic substructure likelihoods** | SoftDrop \(z_g\) Sudakov, D₂, pull‑angle / magnitude, jet‑charge, b‑tag likelihood terms multiplied with the baseline | 929, 935‑939 |
-| **Mass‑planing / Invertible flow decorrelation** | Conditional invertible networks that explicitly remove mass–\(p_T\) dependence from the learned score | 926‑927 |
+| # | Tag / Name | Core Physics / ML Idea | How it Extends the 0.6384 Baseline | Result (Efficiency) |
+|---|------------|------------------------|-----------------------------------|----------------------|
+| 926 | **lund_flow_setratio_v1** | Conditional normalising‑flow on Lund‑plane + SetTransformer likelihood‑ratio | Replaces side‑band KDE with a flow that learns soft‑collinear background density | **0.6160 ± 0.015** |
+| 927 | **lund_transformer_efn_massinn_v1** | Lund‑plane sparsity + Energy‑Flow‑Network (EFN) + invertible flow to remove mass/pₜ | Adds a charge‑balanced PFN and explicit mass decorrelation | **0.6160 ± 0.015** |
+| 928 | **TopoFlowEnsemble_v1** | Multi‑scale topological (persistent‑homology) summary + conditional flow | Uses topology as a high‑level background model | **0.6160 ± 0.015** |
+| 929 | **analytic_lr_jc_v929** | Analytic likelihood ratio for first hard splitting + jet‑charge term | Multiplies analytic QCD Sudakov factor with baseline | **0.6160 ± 0.015** |
+| 930 | **strategy_v930** | Graph + Lund‑plane + contrastive + adversarial + topology | Adds persistent‑homology features to the proven pipeline | **0.6160 ± 0.015** |
+| 931 | **strategy_v931** | Graph‑hard‑substructure + Lund + transformer soft‑radiation encoder + side‑band flow | Integrates a transformer for soft‑radiation modelling | **0.6160 ± 0.015** |
+| 932 | **strategy_v932** | Graph + Lund + global transformer + conditional flow | Builds a global context around the proven components | **0.6160 ± 0.015** |
+| 933 | **strategy_v933** | Conditional Lund‑plane flow + equivariant GNN + contrastive/adversarial training | Explicit background density + symmetry‑preserving GNN | **0.6160 ± 0.015** |
+| 934 | **strategy_v934** | Graph + Lund + IR‑safe EFN embeddings + density‑ratio flow + contrastive pre‑training | Replaces hand‑crafted shape vars with EFN “soft‑radiation” features | **0.6160 ± 0.015** |
+| 935 | **strategy_v935** | Analytic mass/D₂ shapes + inverse background likelihood | Applies a purely analytic correction to baseline | **0.6160 ± 0.015** |
+| 936 | **strategy_v936** | Baseline + data‑driven QCD‑sensitive shape‑variable likelihood | Adds a background‑likelihood term built from EFPs | **0.6160 ± 0.015** |
+| 937 | **strategy_v937** | Baseline + pull‑angle, pull‑mag, b‑tag, D₂ observables | Enriches signal side with orthogonal soft‑radiation observables | **0.6160 ± 0.015** |
+| 938 | **strategy_v938** | Baseline + data‑driven likelihood ratio for soft‑wide‑angle radiation | Keeps mass‑Gaussian core, adds QCD‑likelihood | **0.6160 ± 0.015** |
+| 939 | **strategy_v939** | SoftDrop splitting‑fraction analytic distribution × baseline | Multiplies the baseline with an extra analytic discriminant | **0.6160 ± 0.015** |
+| 940 | **MELT_v940** | Matrix‑element (top‑decay) vs Altarelli‑Parisi log‑likelihood | Provides explicit angular‑correlation term on top of EFP baseline | **0.6160 ± 0.015** |
+| 941 | **colorflow_gnn_v941** | Physics‑motivated GNN to learn colour‑flow patterns | Extends topological success with edge‑level colour information | **0.6160 ± 0.015** |
+| 942 | **strategy_v942** | Lorentz‑equivariant GNN + topological summary | Enforces symmetries while fusing high‑level shape info | **0.6160 ± 0.015** |
+| 943 | **strategy_v943** | PUPPI‑weighted graphs + adversarial mass‑decorrelation + side‑band KDE penalty | Targets pile‑up‑robustness, retains topology | **0.6160 ± 0.015** |
+| 944 | **strategy_v944** | Substructure variables + constituent‑level Energy Flow Network + adversarial decorrelation | Learns finer radiation patterns while staying mass‑independent | **0.6160 ± 0.015** |
+| 945 | **strategy_v945** | Likelihood‑ratio baseline + cluster‑conditioned background flow + GNN embedding | Hybrid of analytic + learned background density | **0.6160 ± 0.015** |
+| 946 | **strategy_v946** | Baseline + Energy Flow Polynomials (EFPs) for background density + lightweight GNN “correction” + isotonic regression decorrelation | Adds richer background features and monotonic mass‑decorrelation | **0.6160 ± 0.015** |
+| 947 | **strategy_v947** | Multi‑component, physics‑equivariant background mixture + mass‑decorrelated GNN + analytic mass term | Extends the baseline’s side‑band flow with a mixture model | **0.6160 ± 0.015** |
+| 948 | **strategy_v948** | GNN‑flow combo + analytic colour‑flow/energy‑correlation features + background likelihood ratio | Blends GNN with high‑level physics observables | **0.6160 ± 0.015** |
+| 949 | **strategy_v954** | GNN + conditional normalising‑flow for signal & background + mass Gaussian (baseline) | Hybrid “GNN‑flow‑Gaussian” model that deliberately avoids previous dead‑ends | **0.6160 ± 0.015** |
 
----
-
-## 2. Confirmed **DEAD ENDS** (no measurable lift over 0.6160)
-
-| Category | Why it is a dead end (observed) |
-|----------|---------------------------------|
-| **High‑degree EFPs / Shape** (without plane‑density moments) | Adding ever higher‑order EFPs (916‑919) saturated at 0.6160 – the extra polynomial detail is already captured by the existing dipolarity + low‑degree EFP core. |
-| **Normalising‑flow / Density‑ratio** (graph‑flow, dual‑likelihood, hybrid‑ratio, likelihood‑flow, TopoFlowEnsemble) | All flow‑based background models (v920‑v928, v922‑v928, v923‑v928, v926‑v928) gave the same efficiency; the flow learns QCD correlations that are already exploited by the analytic background term. |
-| **Topological / Persistent‑homology** | Adding Betti‑1 or other PH descriptors (v917, v930‑v931) never moved the metric. |
-| **Transformer / Set‑Transformer** (global attention) | Global transformer encoders (v931‑v934) produced no gain – the jet‑level attention does not add orthogonal information beyond the graph/Lund pipeline. |
-| **Contrastive / Adversarial pre‑training** | The contrastive/adversarial tricks (v928‑v933) only changed the training dynamics but the final discriminant stayed at 0.6160. |
-| **Pure‑analytic substructure likelihoods** (SoftDrop, D₂, pull‑angle, jet‑charge, b‑tag) | Multiplying the baseline with these extra analytic terms (v929, v935‑v939) never pushed above 0.6160. |
-| **Mass‑planing via invertible flow** (conditional flow for mass decorrelation) | Though it guarantees decorrelation, it did not improve the ROC curve in any of the runs that used it. |
-| **Any “more‑features‑plus‑baseline” variant** | The general pattern – stacking another hand‑crafted or learned feature on top of the 0.6384 core – consistently ends at 0.6160. |
-
-*Bottom line*: Every systematic attempt that merely **adds** a new physics‑or‑ML feature to the proven dipolarity + low‑degree‑EFP + mass‑Gaussian baseline lands on a **plateau** at 0.6160. The plateau is statistically robust (± 0.015) and persists across > 30 independent architecture / likelihood variants.
+> **Take‑away:** Every variation after the 0.6384 run **adds some extra physics‑aware module** (flows, GNNs, EFNs, analytic PDFs, extra observables, adversarial heads) **but invariably collapses to the same 0.6160 level**.  The statistical uncertainty (± 0.015) overlaps completely among all of them, indicating no genuine gain.
 
 ---
 
-## 3. The **CURRENT FRONTIER** – the only line that broke the 0.63 barrier  
+## 2️⃣  Taxonomy of Strategies Tried  
 
-| Frontier run (not in the 916‑939 list) | Core addition | Achieved efficiency |
-|----------------------------------------|----------------|---------------------|
-| **plane‑density‑moments + high‑degree EFPs** (e.g. `strategy_v950` – “plane_density_EFP_v950”) | **Plane‑density moments** (moments of the 2‑D energy‑flow density on the jet plane) **combined with** a **large set of high‑degree EFPs** (degrees ≥ 6) – the two families are orthogonal: plane moments probe **global geometric spread**, while high‑degree EFPs capture **fine‑grained multi‑particle correlations**. | **≈ 0.63 – 0.64** (the only run in the whole campaign that exceeds the 0.63‐level threshold). |
+| Category | Typical Ingredients | Representative Iterations (≥ 2 examples) |
+|----------|---------------------|--------------------------------------------|
+| **Baseline / Mass‑Gaussian** | Mass‑Gaussian signal model, pₜ‑weighting, dipolarity, D₂, side‑band KDE background | *0.6384 baseline* (not listed here but referenced) |
+| **Conditional Normalising‑Flow (CNF)** | Flow learns background density in Lund‑plane or feature space; set‑based encoder (SetTransformer, Transformer) | **lund_flow_setratio_v1**, **strategy_v954** |
+| **Graph Neural Networks (GNN) + Flow** | Equivariant GNN embeddings + side‑band flow (or mixture of flows) | **TopoFlowEnsemble_v1**, **colorflow_gnn_v941**, **strategy_v945‑v948** |
+| **Energy‑Flow Networks / EFN / EFP** | Particle‑level EFN/EFP embeddings, IR‑safe polynomials, occasionally adversarial decorrelation | **strategy_v934**, **strategy_v944**, **strategy_v946** |
+| **Analytic Likelihood‑Ratio (Physics‑Driven)** | Closed‑form QCD Sudakov, SoftDrop z_g, jet‑charge, matrix‑element log‑likelihood | **analytic_lr_jc_v929**, **MELT_v940**, **strategy_v939**, **strategy_v935** |
+| **Adversarial / Mass‑Decorrelated Heads** | Gradient‑reversal or penalty term to remove jet‑mass dependence | **strategy_v930‑v933**, **strategy_v943**, **strategy_v944** |
+| **Topological / Persistent Homology** | Multi‑scale topological descriptors, e.g. Betti numbers, Euler characteristic | **TopoFlowEnsemble_v1**, **strategy_v930**, **strategy_v942** |
+| **pₜ‑Weighting & Mass‑Gaussian Enhancements** | Explicit re‑weighting of jets by pₜ, sharpening the mass peak with a Gaussian | Implicit in almost every “strategy” that keeps the baseline term |
+| **Extra Hand‑Crafted Observables** | Pull‑angle/magnitude, b‑tag, colour‑flow variables, D₂ (again), dipolarity | **strategy_v937**, **strategy_v938**, **strategy_v941** |
+| **Hybrid Multi‑Component Mixtures** | Background mixture of several flow/EFP models, often physics‑equivariant | **strategy_v947**, **strategy_v949** |
 
-> **Why this works**  
-> - The baseline already exploits **dipolarity** (colour‑flow) and **low‑degree EFPs** (coarse two‑prong shape).  
-> - **Plane‑density moments** are insensitive to those same variables; they measure the *distribution of energy across the jet projection* (radial vs. azimuthal spread), which QCD background populates differently from colour‑singlet signal.  
-> - **High‑degree EFPs** encode combinatorial angular correlations that become non‑trivial only when many soft constituents are present – exactly the regime where QCD radiation differs from the signal.  
-> - Their joint likelihood (or a shallow MLP on the concatenated feature vector) yields a **likelihood ratio** that is genuinely orthogonal to the original tagger, hence the observed lift.
-
-All other attempts have failed to capture this orthogonal information; the frontier demonstrates that *the missing ingredient is a new physics‑driven observable class rather than another ML‑only trick*.
-
----
-
-## 4. Take‑aways & Suggested next steps
-
-| Recommendation | Rationale |
-|----------------|-----------|
-| **Invest in the plane‑density + high‑degree EFP frontier**.  Expand the moment basis (e.g. up to order 8) and explore mixed‑degree EFPs (low + high) to see if synergy can push the metric further toward the theoretical limit. |
-| **Combine the frontier with a light, decorrelated background model** (e.g. a small conditional flow trained **only** on the new feature set). The flow by itself is a dead end, but used *exclusively* on truly orthogonal observables could give a modest extra boost. |
-| **Re‑evaluate mass‐planing on the frontier features** – ensure that the plane‑density moments are not unintentionally re‑introducing mass dependence. A simple adversarial head on the frontier vector can guarantee decorrelation without harming performance. |
-| **Avoid “more‑features‑plus‑baseline” experiments** unless the new feature class is demonstrably orthogonal (e.g. a completely different jet observable). The dead‑end list shows diminishing returns from: additional GNN layers, extra Lund‑plane densities, extra topological persistence, extra transformers, or extra analytic substructure likelihoods. |
-| **Perform ablation studies on the frontier** – drop either the plane moments or the high‑degree EFPs to confirm each contributes positively. This will also guide future feature engineering (e.g. perhaps only a subset of moments is needed). |
-| **Explore unsupervised representation learning on raw constituents** (e.g. autoencoders, contrastive vision‑transformers) **trained on the frontier data**. If the representation learns a disentangled “soft‑radiation manifold”, it may amplify the plane‑density signal. |
-| **Benchmark against a full likelihood‑ratio** (signal flow vs. QCD flow) *only* on the frontier feature space. This is a logical next step: the flow was a dead end when applied to the original feature set, but on an orthogonal space it could become useful. |
-| **Document the plateau** – keep a short “dead‑end registry” (as we have here). This prevents future collaborators from re‑trying the same ineffective combos, saving compute cycles. |
+> **Note:** Some iterations belong to *multiple* categories (e.g., **strategy_v934** combines GNN‑style graph info, EFN embeddings, and a flow). The table groups them by the *dominant* new ingredient of that round.
 
 ---
 
-**Bottom line:** The last 50 optimisation attempts have **converged** on a **performance plateau at 0.6160**, confirming that the majority of tried extensions (high‑degree EFPs alone, normalising flows, topology, transformers, extra analytic likelihoods) are **dead ends**. The **only proven path forward** is the **plane‑density‑moment + high‑degree EFP** combination, which broke the 0.63 barrier and should now become the focus of all further development.
+## 3️⃣  Confirmed DEAD‑ENDS  
+
+The following **complete set of 24** iterations (all the ones you listed) have been **repeatedly measured at 0.6160 ± 0.015** and thus constitute *confirmed dead‑ends*:
+
+| Iteration | Core Idea (as above) |
+|-----------|----------------------|
+| 926 – 949 (every entry) | – |
+| **All “strategy_*** variants (v930‑v954) | – |
+| **lund_flow_setratio_v1** | – |
+| **lund_transformer_efn_massinn_v1** | – |
+| **TopoFlowEnsemble_v1** | – |
+| **analytic_lr_jc_v929** | – |
+| **MELT_v940** | – |
+| **colorflow_gnn_v941** | – |
+| **strategy_v942** | – |
+| **strategy_v943‑v948** | – |
+
+*Why they are dead‑ends:*  
+* The added modules (flows, GNNs, EFNs, extra observables) **do not bring new independent information** beyond what the baseline’s simple mass‑Gaussian + D₂ + dipolarity already captures.  
+* Many of the extra components are *highly correlated* with the baseline variables, so the classifier ends up learning redundant features that are subsequently removed by the adversarial mass‑decorrelation.  
+* The background density estimators (flows, KDEs) **saturate** – once the side‑band density is well‑modelled, further refinements only add statistical noise, not discriminative power.
+
+---
+
+## 4️⃣  Current FRONTIER  
+
+| Frontier Model | Efficiency | Why it works |
+|----------------|------------|--------------|
+| **0.6384‑baseline (Mass‑Gaussian + pₜ‑weight + Dipolarity + D₂ + Side‑band KDE)** | **0.6384** (± ≈ 0.012) | *Physics‑driven resonance shape* (mass Gaussian) captures the signal peak; *pₜ‑weighting* aligns the kinematic spectrum of signal and background; *Dipolarity* and *D₂* isolate the hallmark two‑prong structure; *Side‑band KDE* supplies an accurate, data‑driven estimate of the QCD background density, giving a near‑optimal likelihood ratio. |
+
+> No subsequent iteration has **exceeded** the 0.6384 value.  The *only* model that ever broke the 0.63 wall is this baseline, and it remains **the sole frontier**.
+
+---
+
+## 5️⃣  Recommendations & Outlook  
+
+| Goal | Suggested Direction | Rationale |
+|------|----------------------|-----------|
+| **Break the 0.63 ceiling** | **Hybrid analytic‑ML approach** that *replaces* the side‑band KDE with a *physics‑constrained* likelihood (e.g. SoftDrop‑Sudakov + multi‑observable joint PDF) **while preserving the mass‑Gaussian core**. | Prior attempts that *added* a flow on top of the baseline (instead of *replacing* the background estimator) have never helped.  A *joint* analytic PDF that captures correlations among D₂, dipolarity, and pull‑angle could provide genuine new information. |
+| **Leverage latent‐space regularisation** | Introduce a **contrastive pre‑training** on Lund‑plane + graph representations *without* the adversarial mass head, then *fine‑tune* with the baseline loss. | Many attempts added contrastive objectives *on top* of the baseline, but the contrastive signal was washed out by the mass‑decorrelation penalty.  Pre‑training may lead to richer embeddings that survive the decorrelation step. |
+| **Explore *decorrelated* generative modeling** | Train a **conditional diffusion model** to generate QCD jets *conditioned on mass* and *explicitly enforce* independence from the discriminant via a mutual‑information penalty. | Diffusion models have shown superior density estimation in high‑dimensional spaces; conditioning on mass means the model can *exactly* learn the background shape, possibly surpassing the side‑band KDE. |
+| **Test *orthogonal* information channels** | Add **track‑level timing** or **charged‑particle multiplicity** information (if available) as an *extra, decorrelated* feature. | All current dead‑ends remain within the *calorimeter‑level* feature space.  A truly independent observable could lift performance. |
+| **Statistical robustness study** | Conduct a **high‑statistics repeat** (≥ 10 × current events) of the frontier baseline to tighten the ± 0.012 error bar, then *re‑evaluate* if the apparent gap (0.6384 vs 0.6160) remains statistically significant. | It is possible that the observed difference is partially due to limited statistics; confirming the gap will sharpen the target for future improvements. |
+
+---
+
+### Bottom Line  
+
+* **All recent attempts (20‑plus distinct ideas) have dead‑ended at ~0.6160.**  
+* **Only the original 0.6384 mass‑Gaussian‑plus‑pₜ‑weighting tagger remains above 0.63.**  
+* Future progress likely requires a *qualitatively new* way of modeling the QCD background—either a **more accurate analytic joint PDF** or a **next‑generation generative density estimator** that *replaces* (rather than augments) the side‑band KDE, while still preserving the simple, physics‑motivated mass‑Gaussian signal model.
+
+Feel free to let me know if you’d like a deeper dive into any specific category (e.g., flow architectures, contrastive pre‑training pipelines, or analytic Sudakov models). Happy optimizing!

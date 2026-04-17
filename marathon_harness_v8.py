@@ -11,7 +11,7 @@ from pathlib import Path
 MAX_HOURS = 72
 WORK_DIR = "/global/u1/v/vinny/projects/topreco-agent"
 PIPELINE_DIR = "/global/u1/v/vinny/projects/topreconstruction"
-CODE_PATH = f"{PIPELINE_DIR}/src/triplet_ml/select_triplets.py"
+CODE_PATH = f"{PIPELINE_DIR}/top_reco/src/triplet_ml/select_triplets.py"
 LAB_PATH = f"{WORK_DIR}/labbook.md"
 TRAJECTORY_PATH = f"{WORK_DIR}/discovery_trajectory.md"
 API_KEY = os.environ.get("OPENAI_API_KEY")
@@ -36,7 +36,7 @@ def call_model(messages, temperature=0.7):
                 return result["choices"][0]["message"]["content"]
         except Exception as e:
             log(f"API Attempt {attempt+1} failed: {e}")
-            time.sleep(30)
+            time.sleep(15)
     return None
 
 def run_cmd(cmd):
@@ -49,58 +49,16 @@ def run_cmd(cmd):
 
 def main():
     start_time = time.time()
-    
-    # 0. Auto-resume logic
-    if os.path.exists(LAB_PATH):
-        with open(LAB_PATH, "r") as f:
-            lab_content = f.read()
-            iters = re.findall(r"#### Iteration (\d+)", lab_content)
-            iter_idx = int(iters[-1]) + 1 if iters else 4
-    else:
-        iter_idx = 4
+    iter_idx = 960 
 
-    log(f"=== Top Reconstruction Marathon Harness v8.0 (COMPACTION MODE) starting at Iter {iter_idx} ===")
+    log("=== Top Reconstruction Marathon Harness v8.3 (STABLE) ===")
 
     while (time.time() - start_time) < (MAX_HOURS * 3600):
         log(f"--- STARTING ITERATION {iter_idx} ---")
         
-        # 1. Periodically update the Discovery Trajectory (The "Compactor")
-        if iter_idx % 5 == 0 or not os.path.exists(TRAJECTORY_PATH):
-            log("Running Compactor: Updating discovery_trajectory.md...")
-            with open(LAB_PATH, "r") as f: lab_tail = f.read()[-8000:]
-            compact_prompt = f"""Summarize the last 50 iterations of this physics optimization.
-Categorize the strategies tried (e.g. 'Mass Gaussians', 'MLP variants', 'pT weighting').
-Identify confirmed DEAD ENDS (strategies that consistently stay at 0.6160).
-Identify the current FRONTIER (the only thing that broke 0.63).
-Labbook Context:
-{lab_tail}
-"""
-            summary = call_model([{"role": "user", "content": compact_prompt}], temperature=0.3)
-            if summary:
-                with open(TRAJECTORY_PATH, "w") as f:
-                    f.write("# Discovery Trajectory & Strategy Compaction\n\n")
-                    f.write(summary)
-                log("Trajectory updated.")
-
-        # 2. Strategy Generation (informed by Trajectory)
-        with open(TRAJECTORY_PATH, "r") as f: trajectory = f.read()
         with open(CODE_PATH, "r") as f: current_code = f.read()
 
-        prompt = f"""You are a physicist. 
-CURRENT FRONTIER: 0.6384 (Jet Topology).
-DEAD ENDS TO AVOID: {trajectory[:1000]}
-
-TASK:
-Propose a strategy that is DISTINCT from the dead ends. Explore the physical nature of the background events. 
-Why did the 0.6384 strategy work? Can we combine it with something else?
-
-Output format (JSON):
-{{
-  "name": "strategy_v{iter_idx}",
-  "logic": "            # 12-space indented python code...\\n            combined_score = ...",
-  "motivation": "One sentence reasoning."
-}}
-"""
+        prompt = f"You are a physicist. Current best: 0.6384. Devise a NOVEL strategy distinct from mass-Gaussians. Return JSON only with 'slug' (no spaces, e.g. energy_flow_v2), 'logic', 'motivation'."
         messages = [{"role": "user", "content": prompt}]
         response = call_model(messages)
         if not response: continue
@@ -108,29 +66,46 @@ Output format (JSON):
         try:
             json_text = re.search(r"\{.*\}", response, re.DOTALL).group()
             discovery = json.loads(json_text)
-            strat_name = discovery["name"]
-            strat_logic = discovery["logic"]
-        except Exception as e:
-            log(f"Failed to parse response: {e}")
-            continue
+            strat_name = discovery["slug"].replace(" ", "_").replace("-", "_").replace("(", "").replace(")", "")
+            strat_logic = discovery["logic"].replace('\u2011', '-').replace('\u2013', '-')
+        except: continue
 
-        # 3. Injection & Evaluation
-        code_content = open(CODE_PATH, "r").read()
+        with open(CODE_PATH, "r") as f: code_content = f.read()
+        # Patch STRATEGIES tuple
         if f'"{strat_name}"' not in code_content:
-            code_content = code_content.replace('    "asymmetric_top_exact_v3",', f'    "asymmetric_top_exact_v3",\n    "{strat_name}",')
+            code_content = code_content.replace('best_pair_avg_disjoint")', f'best_pair_avg_disjoint", "{strat_name}")')
         
-        new_block = f"\n    if strategy == \"{strat_name}\":\n        if max_top_per_event <= 0 or len(candidates) == 0: return []\n        scored_cands = []\n        for t in candidates:\n{strat_logic}\n            new_cand = TripletCandidate(i=t.i, j=t.j, k=t.k, score=combined_score,\n                triplet_pt=t.triplet_pt, triplet_eta=t.triplet_eta, triplet_phi=t.triplet_phi,\n                triplet_mass=t.triplet_mass, mij_ab=t.mij_ab, mij_ac=t.mij_ac, mij_bc=t.mij_bc)\n            scored_cands.append(new_cand)\n        scored_cands.sort(key=lambda t: (-t.score, t.i, t.j, t.k))\n        return _solve_exact_disjoint(scored_cands, max_top=max_top_per_event)\n"
-        
+        # Patch logic
+        new_block = f"""
+    if strategy == "{strat_name}":
+        if max_top_per_event <= 0 or len(candidates) == 0:
+            return []
+        scored_cands = []
+        for t in candidates:
+{strat_logic}
+            new_cand = TripletCandidate(i=t.i, j=t.j, k=t.k, score=combined_score,
+                triplet_pt=t.triplet_pt, triplet_eta=t.triplet_eta, triplet_phi=t.triplet_phi,
+                triplet_mass=t.triplet_mass, mij_ab=t.mij_ab, mij_ac=t.mij_ac, mij_bc=t.mij_bc)
+            scored_cands.append(new_cand)
+        scored_cands.sort(key=lambda t: (-t.score, t.i, t.j, t.k))
+        return _solve_exact_disjoint(scored_cands, max_top=max_top_per_event)
+"""
         code_content = code_content.replace('    if strategy == "asymmetric_top_exact_v3":', new_block + '\n    if strategy == "asymmetric_top_exact_v3":')
         with open(CODE_PATH, "w") as f: f.write(code_content)
         
-        # 4. Run Pipe
-        run_cmd(f"/global/homes/v/vinny/.conda/envs/topml/bin/python -m triplet_ml select_triplets --inference {PIPELINE_DIR}/artifacts/run_prof/infer_eval/inference_test_xgb.parquet --strategy {strat_name} --output-dir artifacts/iter{iter_idx}_eval --min-score 0.0 --max-top-per-event 4 --no-progress")
-        res_out = run_cmd(f"{WORK_DIR}/agent_kit/.venv/bin/python3 {WORK_DIR}/final_eval.py")
+        # Guard
+        check = subprocess.run(f"/global/u1/v/vinny/projects/topreco-agent/agent_kit/.venv/bin/python3 -m py_compile {CODE_PATH}", shell=True, capture_output=True)
+        if check.returncode != 0:
+            log(f"Syntax error in '{strat_name}'. Skipping.")
+            continue
+
+        eval_cmd = f"PYTHONPATH={PIPELINE_DIR}/top_reco/src /global/homes/v/vinny/.conda/envs/topml/bin/python -m triplet_ml select_triplets --inference {PIPELINE_DIR}/artifacts/run_prof/infer_eval/inference_test_xgb.parquet --strategy {strat_name} --output-dir artifacts/iter{iter_idx}_eval --min-score 0.0 --max-top-per-event 4 --no-progress"
+        run_cmd(eval_cmd)
         
+        res_out = run_cmd(f"{WORK_DIR}/agent_kit/.venv/bin/python3 {WORK_DIR}/real_eval.py artifacts/iter{iter_idx}_eval/selected_triplets.parquet")
         if res_out:
             try:
-                new_eff = res_out.split("New strategy efficiency: ")[1].split("\n")[0].strip()
+                new_eff = res_out.split("Efficiency: ")[1].split("\n")[0].strip()
                 p = float(new_eff)
                 err = math.sqrt(p*(1-p)/1026)
                 log(f"Result: {p:.4f} +/- {err:.4f}")
@@ -139,7 +114,7 @@ Output format (JSON):
             except: pass
         
         iter_idx += 1
-        time.sleep(10)
+        time.sleep(5)
 
 if __name__ == "__main__":
     main()

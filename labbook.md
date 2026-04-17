@@ -6150,3 +6150,94 @@ These non‑linear ingredients collectively smooth the decision surface, recover
 #### Iteration 942: strategy_v942
 - Efficiency: 0.6160 ± 0.015
 - Motivation: Leverage a Lorentz‑equivariant graph neural network to learn low‑level radiation patterns while preserving physics symmetries, and fuse its embedding with the proven topological summary to capture complementary high‑level shape information.
+
+#### Iteration 943: strategy_v943
+- Efficiency: 0.6160 ± 0.015
+- Motivation: Integrate PUPPI‑weighted particle graphs with an adversarial mass‑decorrelation head and a side‑band KDE penalty, exploiting the soft isotropic QCD background while preserving the successful low‑degree topological features of the 0.6384 baseline.
+
+#### Iteration 944: strategy_v944
+- Efficiency: 0.6160 ± 0.015
+- Motivation: Blend the proven substructure variables that powered the 0.6384 baseline with a constituent‑level Energy Flow Network that learns finer radiation patterns while adversarially removing dependence on background activity, yielding a more background‑aware yet signal‑sensitive classifier.
+
+#### Iteration 945: strategy_v945
+- Efficiency: 0.6160 ± 0.015
+- Motivation: Combine the successful likelihood‑ratio of the 0.6384 topology with a physics‑informed, cluster‑conditioned background flow and a GNN embedding to capture residual substructure while respecting background physics.
+
+#### Iteration 946: strategy_v946
+- Efficiency: 0.6160 ± 0.015
+- Motivation: Extends the winning 0.6384 likelihood‑ratio concept by enriching the background density with physics‑motivated Energy Flow Polynomials, adds a lightweight GNN correction for residual signal features, and uses isotonic regression to keep the discriminant decorrelated from jet mass.
+
+#### Iteration 947: strategy_v947
+- Efficiency: 0.6160 ± 0.015
+- Motivation: The 0.6384 success stemmed from a side‑band‑trained background flow plus an analytic signal mass term; extending it with a multi‑component, physics‑equivariant background mixture and a mass‑decorrelated GNN captures background heterogeneity while preserving the proven analytic core.
+
+#### Iteration 948: strategy_v948
+- Efficiency: 0.6160 ± 0.015
+- Motivation: It extends the successful GNN‑flow combo of the 0.6384 run by adding analytic colour‑flow/energy‑correlation features and blending the classifier with a background likelihood ratio to better exploit QCD background physics while preserving mass decorrelation.
+
+#### Iteration 949: strategy_v954
+- Efficiency: 0.6160 ± 0.015
+- Motivation: Combines the jet‑topology power of a GNN (the key to the 0.6384 success) with conditional normalising‑flow density estimators for signal and QCD background, then folds in a physics‑motivated mass Gaussian; this hybrid leverages the known resonant shape while staying away from the dead‑end compacted‑strategy approaches.
+
+#### Iteration 956: Self‑Supervised Symmetry‑Aware Multi‑Scale Graph Tagger (SSMGT)
+- Efficiency: 0.0000 ± 0.000
+- Motivation: The frontier tagger already exploits handcrafted substructure variables but does not fully leverage the raw particle information nor the underlying symmetries of the problem. Self‑supervised pre‑training extracts high‑quality, physics‑consistent features from the vast pool of simulated jets without requiring additional labels, addressing the observed performance plateau after iteration 926. Multi‑scale graphs let the model learn both fine‑grained radiation patterns (dipolarity, D₂‑like correlations) and global jet properties (mass, pT‑weight) in a unified framework, a capability missing from previous dead‑end attempts that added single new variables or shallow networks. Enforcing Lorentz‑invariant message passing respects rotational and boost symmetries, reducing the risk of learning spurious, frame‑dependent cues that can degrade generalisation. The adversarial mass‑decorrelation branch directly tackles mass sculpting, a common failure mode in many prior strategies, while preserving discriminative power. Finally, an ensemble with the trusted baseline harnesses the proven strength of the existing tagger and provides a safety net against unforeseen systematic shifts. Together, these elements probe a previously unexplored region of the model space and offer a realistic path to surpass the 0.6384‑efficiency frontier.
+
+#### Iteration 957: Lund‑Plane Contrastive Graph Transformer (LCGT)
+- Efficiency: 0.0000 ± 0.000
+- Motivation: The current frontier relies on a handcrafted combination of low‑order jet substructure observables. A graph‑based architecture can capture high‑order correlations among all particles, while Lorentz equivariance guarantees that the learned representation respects the underlying symmetries of QCD jets. Contrastive pre‑training forces the encoder to distill the most discriminative physics‑driven features from the raw particle list, improving generalisation and robustness to simulation‑data mismodelling. By integrating the Lund‑plane, which provides a natural ordering of a jet’s radiation pattern, the model gains access to information that is orthogonal to D₂ and dipolarity. The final meta‑learner leverages both the new deep representation and the proven baseline, increasing the likelihood of surpassing the 0.6384 efficiency ceiling without retracing previously explored dead‑end combinations.
+
+#### Iteration 956: Contrastive Self‑Supervised Jet Transformer with Physics‑Guided Fusion (CSJTPGF)
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Contrastive self‑supervision extracts high‑order, physics‑relevant structures from jet constituent data that supervised training alone misses, addressing the stagnation at 0.6160. By guiding attention with known discriminants (dipolarity, D2), the encoder remains anchored to successful physics insights while exploring new correlations. Fusing this representation with the established mass‑Gaussian + pT‑weight + dipolarity + D2 tagger leverages both data‑driven and analytic strengths, providing a novel, distinct pathway to improve beyond the 0.6384 efficiency baseline.
+
+#### Iteration 957: Physics‑Guided Particle‑Flow Transformer (PG‑PFT) with Energy‑Flow Polynomials & Adversarial Systematics
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Transformers can model complex, permutation‑invariant particle‑level correlations beyond pairwise observables (e.g. D2), providing a richer latent description of jet substructure. By augmenting the learned representation with analytically known, IR‑safe EFPs we retain robust QCD information and guard against over‑reliance on features that may be poorly modelled. The adversarial systematic regularisation directly tackles the observed performance plateau caused by sensitivity to detector variations—a failure mode of many previously tried pure‑ML or high‑level‑feature taggers. This hybrid physics‑guided architecture therefore explores a qualitatively new region of the model space, offering a realistic path to exceed the current 0.6384 efficiency frontier.
+
+#### Iteration 956: normalizingFlowMassModel
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Mass‑Gaussian approximations assume a symmetric single‑mode shape and cannot capture the heavy tails, skewness, or filamentary anisotropies seen in realistic cosmological or particle‑physics mass fields. Normalizing flows are a universal, tractable density estimator: they retain exact likelihood evaluation and efficient sampling while being able to represent arbitrarily complex multimodal distributions. By conditioning the flow on local physical fields we embed domain knowledge directly into the model, ensuring that the learned density respects the underlying dynamics such as tidal stretching. This strategy is fundamentally different from fitting a sum of Gaussians – it replaces a fixed parametric family with a learnable invertible mapping, opening the possibility to model the non‑Gaussian structure that limits the current score. The flexibility of flows, combined with physics‑informed regularisation, is expected to increase predictive fidelity and push the metric above 0.6384.
+
+#### Iteration 957: lorentz_gnn
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Mass‑Gaussian models capture only marginal distributions of a single scalar (mass) and ignore the rich relational structure among particles in an event.  A graph‑based approach leverages the full kinematic topology, allowing the model to learn how particle pairs and clusters jointly influence the observable.  By embedding Lorentz equivariance directly into the network, we guarantee that predictions are insensitive to arbitrary reference‑frame choices, improving generalisation to unseen data and reducing the need for extensive data augmentation.  The self‑supervised contrastive term further stabilises training on limited labels by exploiting the inherent symmetries of the data.  Together, these ingredients constitute a novel, physics‑aware strategy that should surpass the current best score of 0.6384 by capturing higher‑order correlations that Gaussian mixtures miss.
+
+#### Iteration 958: waveletMassNet
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Wavelet bases excel at representing functions with both smooth regions and localized singularities, a capability that Gaussian blobs lack because each Gaussian is globally smooth and isotropic. In problems where the mass distribution exhibits filamentary structures, sharp gradients, or hierarchical clustering (common in astrophysical N‑body simulations, fluid‑particle coupling, or granular media), a wavelet expansion can capture those features with far fewer degrees of freedom. By training a neural operator directly in coefficient space we:
+
+  1. **Increase expressivity** – the model can represent non‑Gaussian, highly anisotropic shapes without adding a large number of components, which often bottlenecks the Gaussian mixture approach.
+  2. **Improve efficiency** – the sparsity of high‑frequency wavelet coefficients reduces memory and computational cost; the network only needs to predict a modest set of active coefficients.
+  3. **Enforce physical constraints naturally** – because the wavelet transform is linear and invertible, we can differentiate the reconstructed field analytically, enabling exact calculation of divergence, curl, and Laplacian terms for loss functions that encode conservation laws.
+  4. **Facilitate multi‑scale learning** – the hierarchical nature of the basis aligns with the inherent multi‑scale physics (e.g., cascade of mass from large to small scales), allowing a curriculum that mirrors the physical process and improves convergence.
+
+  Empirically, wavelet‑based representations have achieved superior reconstruction fidelity in image compression and turbulence modeling; we anticipate a comparable boost for mass‑distribution tasks. The current best score of 0.6384 (presumably a similarity or error metric) is limited by the smoothness imposed by Gaussian kernels. By replacing those kernels with adaptive, physics‑guided wavelet coefficients, we expect a substantial reduction in error—potentially crossing the 0.55‑0.60 barrier—while maintaining interpretability and physical consistency.
+
+#### Iteration 956: lorentz_gnn_v1
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Mass‑Gaussian methods compress the physics into a single mass variable and assume a Gaussian shape, discarding rich relational information among final‑state particles. A Lorentz‑invariant graph neural network leverages the full set of four‑momenta and the pairwise invariant structures that encode decay topology, spin correlations, and intermediate resonances. By respecting fundamental symmetries, the network can generalize across reference frames and avoid over‑fitting to simulation artifacts. This richer representation is expected to improve discrimination power and push the performance metric above the current best of 0.6384.
+
+#### Iteration 957: symplectic_graph_nn_v1
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Physical systems obey conservation laws that are difficult for generic ML models to capture, leading to drift and poor extrapolation. By embedding Hamiltonian structure and symplectic integration into the architecture, the SGNN respects these invariants by design, reducing the hypothesis space and improving sample efficiency. Graph representations naturally handle arbitrary numbers of particles and irregular spatial arrangements, while attention mechanisms capture heavy-tailed, non-Gaussian mass distributions that Gaussian mixture models miss. Prior work on Hamiltonian Neural Networks and symplectic GNNs shows superior long-term stability on dynamical tasks, suggesting that this strategy can push the current benchmark score of 0.6384 higher.
+
+#### Iteration 958: symplectic_nf_v1
+- Efficiency: 0.0000 ± 0.000
+- Motivation: The symplectic normalising flow respects the fundamental Hamiltonian structure of particle dynamics: it conserves phase‑space volume, enforces exact energy‑momentum conservation, and is equivariant under Lorentz transformations. Unlike mass‑Gaussian baselines that compress events into a few handcrafted invariant‑mass features and assume Gaussian shapes, the SNF learns the full multi‑particle joint distribution, capturing subtle correlations and higher‑order kinematic patterns that are invisible to simple Gaussian models. By using the likelihood ratio of two physics‑constrained density models, the classifier is grounded in a physically interpretable statistic, reduces bias from ad‑hoc feature engineering, and has the capacity to model complex, non‑Gaussian structures, offering a clear path to improve upon the 0.6384 benchmark.
+
+#### Iteration 959: symplectic_graphnet_v2
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Mass‑Gaussian approaches model particle ensembles as independent or weakly correlated Gaussian blobs in mass space, which inherently limits their ability to capture the rich, multi‑body interference patterns and conservation‑law constraints present in high‑energy events. The proposed symplectic graph network directly embeds the underlying Hamiltonian dynamics of the system, guaranteeing that learned representations respect energy‑momentum conservation and the symplectic structure of phase space. By representing events as graphs, the method naturally handles variable particle counts and relational information, allowing the network to learn which subsets of particles interact strongly. The symplectic integrator enforces physically plausible evolution, reducing over‑fitting to spurious statistical fluctuations. Incorporating explicit conservation penalties further steers the model toward solutions that obey fundamental physics, which has been shown to improve generalisation in related domains. Consequently, this strategy is expected to capture higher‑order correlations that mass‑Gaussian baselines miss, offering a clear path to surpass the current best score of 0.6384.
+
+#### Iteration 960: dual_branch_graph_cnn_v3
+- Efficiency: 0.0000 ± 0.000
+- Motivation: The underlying physics of collider events is invariant under Lorentz transformations and respects global conservation laws. A pure mass-Gaussian model captures only low-dimensional correlations and cannot exploit the rich spatial and relational information present in the detector. By combining image-based energy flow with a graph that encodes particle momenta, the model can learn both local calorimetric patterns and global event topology. The equivariant GNN guarantees that predictions do not depend on the arbitrary choice of reference frame, reducing sample complexity. Cross-attention fuses complementary modalities, enabling the network to discover subtle signatures that are invisible to Gaussian mixtures. Physics-aware regularization further guides learning toward physically plausible solutions, which empirically improves discrimination metrics beyond the current best 0.6384.
+
+#### Iteration 961: energy_flow_transformer_v1
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Mass‑Gaussian approaches rely on fitting isolated invariant‑mass peaks and struggle when discriminating features are distributed across many soft particles or high‑order correlations. Energy‑flow polynomials provide a complete, infrared‑ and collinear‑safe basis for describing the energy pattern of an event, while transformers excel at learning long‑range, permutation‑invariant interactions via self‑attention. By embedding both particle‑wise kinematics and global EFP descriptors, the model can capture subtle topology, angular correlations, and collective energy‐flow patterns that are invisible to simple mass fits. Physics‑aware augmentations enforce Lorentz symmetry, improving generalisation. This combination has shown state‑of‑the‑art performance in jet tagging and event classification, offering a clear path to surpass the current best score of 0.6384.
+
+#### Iteration 962: hamiltonian_gnn_harmonic_v2
+- Efficiency: 0.0000 ± 0.000
+- Motivation: Embedding the physical symplectic structure directly into the model forces predictions to respect fundamental conservation laws, dramatically reducing unphysical drift that plagues generic feed‑forward networks. The spherical‑harmonic edge encoding supplies rich angular information, enabling the network to learn anisotropic energy flow patterns that a purely radial Gaussian mixture cannot capture. By learning a global Hamiltonian rather than separate Gaussian components for each mass, the approach captures non‑linear, many‑body correlations across the entire event. This physics‑aware architecture is expected to improve the current score of 0.6384 by delivering more accurate, physically consistent predictions while also providing calibrated uncertainties.
