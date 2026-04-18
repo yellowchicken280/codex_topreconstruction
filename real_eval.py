@@ -4,26 +4,26 @@ import sys
 
 truth_path = "/global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/dataset_prepare/test.parquet"
 
-def evaluate(selected_path):
+def evaluate(selected_path, event_slice_start=0, event_slice_count=2000):
     if not os.path.exists(selected_path):
         return 0.0
     
-    # 1. Determine the first 2000 event IDs
+    # 1. Determine the specified event ID slice
     truth_table_all = pq.read_table(truth_path, columns=["event_id"])
     all_eids = truth_table_all["event_id"].to_pylist()
     
-    seen_eids = set()
-    first_2k_ordered = []
+    unique_eids = []
+    seen = set()
     for eid in all_eids:
-        if eid not in seen_eids:
-            seen_eids.add(eid)
-            first_2k_ordered.append(eid)
-            if len(first_2k_ordered) >= 2000:
-                break
+        if eid not in seen:
+            seen.add(eid)
+            unique_eids.append(eid)
     
-    eval_eids_set = set(first_2k_ordered)
+    # Select the range
+    eval_eids_slice = unique_eids[event_slice_start : event_slice_start + event_slice_count]
+    eval_eids_set = set(eval_eids_slice)
     
-    # 2. Get truth triplets and denominator for these 2000 events
+    # 2. Get truth triplets and denominator for these events
     truth_table = pq.read_table(truth_path)
     tr_eids = truth_table["event_id"].to_pylist()
     tr_truth = truth_table["is_truth"].to_pylist()
@@ -61,9 +61,9 @@ def evaluate(selected_path):
     return n_correct / n_total_truth
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        path = sys.argv[1]
-        eff = evaluate(path)
-        print(f"Efficiency: {eff:.4f}")
-    else:
-        print("Usage: python real_eval.py <path_to_selected_triplets.parquet>")
+    path = sys.argv[1]
+    start = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+    count = int(sys.argv[3]) if len(sys.argv) > 3 else 2000
+    
+    eff = evaluate(path, start, count)
+    print(f"Efficiency: {eff:.4f}")

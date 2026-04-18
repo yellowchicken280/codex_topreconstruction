@@ -3,13 +3,13 @@
 ## Abstract
 Efficient reconstruction of hadronic top-quark decays is a critical challenge in high-energy physics, often limited by combinatorial backgrounds in multi-jet final states. This repository presents an autonomous discovery harness powered by high-context reasoning models (lbl/gpt-oss-120b-high) to iteratively devise and evaluate reconstruction strategies. We established a verified baseline efficiency of 0.6267 using asymmetric Gaussian mass priors and kinematic $p_T$ scaling. By introducing angular topology features ($\Delta R$ separation) and non-linear geometric-mean scoring logic, we successfully explored a search space of over 5,000 unique physics-informed strategies. Demonstrating a reproducible efficiency gain to 0.6277, this work highlights the potential for agentic systems to autonomously discover higher-order kinematic correlations that improve signal-background separation in latency-constrained trigger environments.
 
-## 🚀 Marathon Status: ACTIVE (Topological Era)
+## 🚀 Marathon Status: ACTIVE (Mass Fraction Era)
 - **Current Best Efficiency:** **0.6277 ± 0.015** (Verified)
 - **Total Iterations:** 5,000+ 
 - **Methodology:** 72-hour autonomous "Era of Truth" marathon.
 - **Hardware Target:** FPGA L1 Trigger (<80ns latency budget).
 
-## 🛠 Project Architecture (Harness v9.0)
+## 🛠 Project Architecture (Harness v9.5)
 The system utilizes a specialized discovery loop to ensure scientific integrity:
 1. **Symbolic Discovery:** The agent proposes novel Python-based scoring logic using `math.exp`, `math.tanh`, and `math.log`.
 2. **"Honest Era" Verification:** Every strategy is benchmarked against 6,044 events using `real_eval.py`, which enforces a strict, event-aligned truth denominator.
@@ -17,6 +17,7 @@ The system utilizes a specialized discovery loop to ensure scientific integrity:
 4. **Restored Engine:** Full support for sub-mass ($m_{W}$) and angular separation ($\Delta R$) features.
 
 ## 📈 Key Breakthroughs
+| 7000 | Ratios | `ratio_v7000+` | ... | Mass fraction $m_{W}/m_{t}$ signature |
 | Iteration | Era | Strategy | Efficiency | Innovation |
 | :--- | :--- | :--- | :--- | :--- |
 | 0 | Baseline | `baseline_bdt` | 0.4437 | Raw XGBoost Score |
@@ -27,7 +28,7 @@ The system utilizes a specialized discovery loop to ensure scientific integrity:
 - `top_reco/src/triplet_ml/select_triplets.py`: The core physics engine (dynamically patched).
 - `labbook.md`: Detailed log of 5,000+ attempts and physics motivations.
 - `real_eval.py`: The "Era of Truth" evaluator (strict event-aligned denominator).
-- `marathon_harness_v8.py`: The background discovery loop (Harness v9.0).
+- `marathon_harness_v8.py`: The background discovery loop (Harness v9.5).
 
 ---
 *Autonomous discovery performed on the LBL CBorg API cluster.*
