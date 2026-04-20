@@ -1,10 +1,12 @@
 # Optimizing Hadronic Top-Quark Reconstruction using Physics-Informed Agentic Strategy Discovery
 
-## Abstract
-Recent work by Gendreau-Distler et al. demonstrated that LLM-based agents can automate components of high-energy physics data analysis within structured reproducible pipelines. We extend this approach to an autonomous strategy discovery framework in which a high-context model (gpt-oss-120b) accessed via the Berkeley Lab CBorg API iteratively proposes, implements, and evaluates triplet selection strategies built on a pre-trained XGBoost classifier operating on ttbar simulation. Across more than 50,000 autonomous strategy evaluations, the agent autonomously progressed from a raw-score greedy baseline of 0.434 reconstruction efficiency to a verified best of 0.6345 ± 0.015. At each iteration the agent diagnosed failure modes by inspecting events where true triplets were obscured by high-scoring false positives, formed an explicit physics hypothesis, and reflected on whether the outcome confirmed or contradicted that hypothesis. This framework functions as an open-ended scientific search process, mimicking human-led optimization through symbolic reasoning. To ensure scientific integrity, the agent is epistemically isolated from raw evaluation data; it observes only aggregate efficiency metrics and reasons through symbolic physics hypotheses rather than direct data-fitting.
+## 🔬 Project Overview
+This project utilizes a custom autonomous discovery framework to optimize the reconstruction of hadronic top-quark decays ($t \to bW \to bjj$) in high-energy physics simulations. 
+
+The primary challenge is **combinatorial background rejection**: in a multi-jet environment, the system must correctly identify which three jets originated from a single top quark. To meet the constraints of a **Level-1 (L1) Trigger**, any discovered selection logic must execute on an FPGA within an **<80ns latency budget**. Consequently, we prioritize **Symbolic Discovery** (handcrafted arithmetic) over deep neural networks.
 
 ## 🛠 Framework Architecture
-The system utilizes an autonomous discovery loop (Harness v13.0) designed to discover hardware-friendly selection logic compatible with FPGA-based Level-1 trigger latency budgets (<80ns).
+The system utilizes an autonomous discovery loop (Harness v13.0) epistemically isolated from raw data to prevent overfitting.
 
 ```mermaid
 graph TD
@@ -19,25 +21,37 @@ graph TD
     H -->|Cumulative Logic| B
 ```
 
-## 🚀 Status: ACTIVE (Adaptive Refinement Phase)
-- **Current Best Efficiency:** **0.6345 ± 0.015** (Verified)
-- **Cumulative Iterations:** 50,000+ 
-- **Active Feature Set:** 15 Kinematic & Geometric Features (Mass Ratios, $\Delta R$, $\eta$, pT).
-- **Optimization Target:** Reproducible improvement over expert-designed baseline.
+## 📊 Optimization Observables
+The agent has access to 15 kinematic and geometric features for every triplet candidate:
+*   **XGBoost BDT Score:** A pre-trained substructure-aware classifier.
+*   **Global Kinematics:** Triplet Invariant Mass ($m_{123}$), Triplet $p_T$, $\eta$, and $\phi$.
+*   **Sub-Masses ($m_{ij}$):** Invariant masses of all three internal jet pairs (used to find the $W \to jj$ decay).
+*   **Mass Fractions ($m_{ij}/m_{123}$):** Dimensionless ratios used to identify the $m_W/m_{top} \approx 0.46$ physical signature.
+*   **Angular Topology ($\Delta R_{ij}$):** Angular separation between jet pairs to detect "boosted" (collimated) topologies.
+*   **Detector Geometry ($\eta$):** Spatial position used to correct for resolution variations in forward vs. central regions.
 
-## 📈 Key Discovery Phases
-| Phase | Iteration | Strategy | Efficiency | Methodology |
+## 📈 Scientific Discovery Timeline
+The search progressed through four distinct conceptual phases:
+
+| Phase | Goal | Breakthrough Strategy | Efficiency | Key Innovation |
 | :--- | :--- | :--- | :--- | :--- |
-| **I: Baseline** | 0 | `baseline_bdt` | 0.4340 | Raw Multivariate BDT Output |
-| **II: Kinematics** | 13 | `asymmetric_v3` | 0.6280 | Asymmetric mass priors + pT scaling |
-| **III: Topology** | 7306 | `ratio_strat` | 0.5870 | Introduction of dijet mass-fraction ratios |
-| **IV: Cumulative** | 30006 | `cumulative_v30k`| **0.6345** | Multi-dimensional ratio & $\eta$ weighting |
+| **I: Baseline** | Establish ML performance | `baseline_bdt` | 0.4340 | Pure BDT output without physics constraints. |
+| **II: Kinematics** | Enforce Top resonance | `asymmetric_v3` | 0.6280 | Introduction of Asymmetric Gaussian mass priors. |
+| **III: Topology** | Extract internal decay | `ratio_strat` | 0.5870 | Use of dimensionless ratios ($m_W/m_t$) to reject noise. |
+| **IV: Cumulative** | Synergy & Refinement | `cumulative_v30k`| **0.6345** | Integration of $\eta$-position and ratio gating. |
 
-## 📂 Project Structure
-- `the_final_discovery_loop.py`: The primary autonomous discovery engine (Adaptive Mode).
-- `labbook.md`: Comprehensive log of all 50,000+ strategy evaluations and physical motivations.
-- `real_eval.py`: Evaluation script using event-aligned truth-matching logic.
-- `summary_of_discovery.md`: Meta-analysis of the search trajectory and lessons learned.
+### **Phase Details:**
+1.  **Baseline Era:** Proved that pure ML is powerful but lacks the physical "anchors" needed to reject high-multiplicity backgrounds.
+2.  **Kinematic Era:** Shifted focus to the 172.5 GeV mass peak. The agent discovered that a wider Gaussian tail on the low-mass side (due to radiation) significantly improved signal acceptance.
+3.  **Topological Era:** Moved beyond the "whole top." The agent learned to "peer inside" the triplet to find the $W$-boson signature, allowing it to beat expert-designed mass windows.
+4.  **Cumulative Era:** Switched to a self-updating "Champion State." The agent now takes the existing winner and discovers subtle multiplicative corrections (e.g., correcting the score for detector-resolution loss at high $|\eta|$).
+
+## 🚀 Current Status: ACTIVE
+- **Status:** **Adaptive Refinement Phase**
+- **Last Verified Best:** **0.6345 ± 0.015**
+- **Search Iteration:** 50,813+
+- **Timestamp:** Sunday, April 19, 10:23 PM PDT
+- **Current Objective:** Exploring non-linear interactions between triplet $p_T$ and detector $\eta$ to optimize selection in high-boost forward regions.
 
 ---
 *Autonomous discovery performed on the LBL CBorg API cluster. Optimizing for real-time L1 Trigger environments.*
