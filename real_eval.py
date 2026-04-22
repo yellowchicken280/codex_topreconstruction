@@ -1,12 +1,13 @@
 import pyarrow.parquet as pq
 import os
 import sys
+import math
 
 truth_path = "/global/u1/v/vinny/projects/topreconstruction/artifacts/run_10000/dataset_prepare/test.parquet"
 
 def evaluate(selected_path, event_slice_start=0, event_slice_count=2000):
     if not os.path.exists(selected_path):
-        return 0.0
+        return 0.0, 0.0
     
     # 1. Determine the specified event ID slice
     truth_table_all = pq.read_table(truth_path, columns=["event_id"])
@@ -19,11 +20,10 @@ def evaluate(selected_path, event_slice_start=0, event_slice_count=2000):
             seen.add(eid)
             unique_eids.append(eid)
     
-    # Select the range
     eval_eids_slice = unique_eids[event_slice_start : event_slice_start + event_slice_count]
     eval_eids_set = set(eval_eids_slice)
     
-    # 2. Get truth triplets and denominator for these events
+    # 2. Get truth triplets
     truth_table = pq.read_table(truth_path)
     tr_eids = truth_table["event_id"].to_pylist()
     tr_truth = truth_table["is_truth"].to_pylist()
@@ -47,7 +47,7 @@ def evaluate(selected_path, event_slice_start=0, event_slice_count=2000):
         sel_j = sel_table["j"].to_pylist()
         sel_k = sel_table["k"].to_pylist()
     except:
-        return 0.0
+        return 0.0, 0.0
 
     n_correct = 0
     for idx in range(len(sel_eids)):
@@ -57,13 +57,21 @@ def evaluate(selected_path, event_slice_start=0, event_slice_count=2000):
             if triplet in truth_by_event[eid]:
                 n_correct += 1
                 
-    if n_total_truth == 0: return 0.0
-    return n_correct / n_total_truth
+    if n_total_truth == 0: return 0.0, 0.0
+    
+    eff = n_correct / n_total_truth
+    # Standard Binomial Error: sqrt(p(1-p)/N)
+    err = math.sqrt((eff * (1 - eff)) / n_total_truth)
+    
+    return eff, err
 
 if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python real_eval.py <path> [start] [count]")
+        sys.exit(1)
     path = sys.argv[1]
     start = int(sys.argv[2]) if len(sys.argv) > 2 else 0
     count = int(sys.argv[3]) if len(sys.argv) > 3 else 2000
     
-    eff = evaluate(path, start, count)
-    print(f"Efficiency: {eff:.4f}")
+    eff, err = evaluate(path, start, count)
+    print(f"Efficiency: {eff:.4f} +/- {err:.4f}")
