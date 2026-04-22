@@ -3,7 +3,7 @@
 ## 🔬 Project Overview
 This project utilizes a custom autonomous discovery framework to optimize the reconstruction of hadronic top-quark decays ($t \to bW \to bjj$) in high-energy physics simulations. 
 
-The primary challenge is **combinatorial background rejection**: in a multi-jet environment, the system must correctly identify which three jets originated from a single top quark. To meet the constraints of a **Level-1 (L1) Trigger**, any discovered selection logic must execute on an FPGA within an **<80ns latency budget**. Consequently, we prioritize **Symbolic Discovery** (handcrafted arithmetic) over deep neural networks.
+The primary challenge is **combinatorial background rejection**: in a multi-jet environment, the system must correctly identify which three jets originated from a single top quark. We prioritize **open-ended discovery**, allowing the agent to explore complex mathematical structures, multi-layer non-linear activations (MLP-style), and branching decision logic (BDT-style) to maximize reconstruction efficiency.
 
 ## 🛠 Framework Architecture (v17.1)
 The system utilizes a "Hardened Physics Harness" (v17.1) featuring a **Trajectory Analysis Framework** and **Stochastic Exploration Control**.
@@ -16,7 +16,7 @@ graph TD
     C -->|Within-Component Innovation| D
     C -->|Cross-Component Attention Shift| D
     D -->|Patches Physics Engine| E[select_triplets.py]
-    E -->|L1 Inference Benchmarking| F[real_eval.py]
+    E -->|Physics Benchmarking| F[real_eval.py]
     F -->|Efficiency & ΔMetric| G[agent_trajectory.csv]
     G -->|Dynamic Probability Shift| A
 ```
