@@ -88,12 +88,12 @@ Return JSON only: { "slug": "champ_v40000", "logic": "correction_factor = ...\\n
         content = content.replace('best_pair_avg_disjoint")', f'best_pair_avg_disjoint", "{strat_slug}")')
         
         # We define base_score INSIDE the loop so the agent can't break it
-        impl = f\"\"\"
-    if strategy == "{strat_slug}":
+        impl = f"""
+        if strategy == "{strat_slug}":
         if max_top_per_event <= 0 or len(candidates) == 0: return []
         scored_cands = []
         for t in candidates:
-            import math
+            from math import *
             best_w = min([t.mij_ab, t.mij_ac, t.mij_bc], key=lambda m: abs(m - 80.4))
             top_prior = math.exp(-0.5 * ((t.triplet_mass - 162.0) / (18.0 if t.triplet_mass >= 162.0 else 25.0))**2)
             w_prior = math.exp(-0.5 * ((best_w - 80.4) / 18.0)**2)

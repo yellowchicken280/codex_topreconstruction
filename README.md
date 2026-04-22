@@ -5,25 +5,27 @@ This project utilizes a custom autonomous discovery framework to optimize the re
 
 The primary challenge is **combinatorial background rejection**: in a multi-jet environment, the system must correctly identify which three jets originated from a single top quark. To meet the constraints of a **Level-1 (L1) Trigger**, any discovered selection logic must execute on an FPGA within an **<80ns latency budget**. Consequently, we prioritize **Symbolic Discovery** (handcrafted arithmetic) over deep neural networks.
 
-## 🛠 Framework Architecture
-The system utilizes a "Hardened Physics Harness" (v14.5) designed for massive marathon sessions (72+ hours) on the LBL CBorg API cluster.
+## 🛠 Framework Architecture (v17.1)
+The system utilizes a "Hardened Physics Harness" (v17.1) featuring a **Trajectory Analysis Framework** and **Stochastic Exploration Control**.
 
 ```mermaid
 graph TD
-    A[Hardened Physics Harness v14.5] --> B[LLM Reasoning: lbl/gpt-oss-120b]
-    B -->|Proposes Symbolic JSON| C[Logic Sanitizer & Corrector]
-    C -->|Auto-binds Physics Variables| D[Harness Injection]
+    A[Harness v17.1: Trajectory Framework] --> B[LLM Reasoning: lbl/gpt-oss-120b]
+    B -->|Classifies Action| C[Action Classes]
+    C -->|Incremental Tuning| D[Logic Injection]
+    C -->|Within-Component Innovation| D
+    C -->|Cross-Component Attention Shift| D
     D -->|Patches Physics Engine| E[select_triplets.py]
     E -->|L1 Inference Benchmarking| F[real_eval.py]
-    F -->|Efficiency & Uncertainty| G[Deep Session Report]
-    G -->|Updates Champion State| H[Champion History Archive]
-    H -->|Refines Strategy Context| B
+    F -->|Efficiency & ΔMetric| G[agent_trajectory.csv]
+    G -->|Dynamic Probability Shift| A
 ```
 
-### Key Engineering Features (v14.5):
-*   **Variable Pre-Binding:** Automatically binds shorthand like `ratio_ab` and `dr_ab` to the triplet object (`t.ratio_ab`), preventing model-induced `NameError` crashes.
-*   **Namespace Auto-Correction:** Regex-based sanitization that automatically prepends `math.` to functions (e.g., `exp()` -> `math.exp()`) for execution stability.
-*   **Epistemic Isolation:** The discovery loop is isolated from raw data to prevent over-optimization and ensure physical interpretability.
+### Key Engineering Features (v17.1):
+*   **Trajectory Framework**: Formalized logging of every agent action into `agent_trajectory.csv`, capturing `ActionClass`, `Metric`, `DeltaMetric`, `Rationale`, and `Insight`.
+*   **Exponential Probability Decay**: Dynamically shifts the agent from **Refinement** (Exploitation) to **Mutation** (Exploration) as progress on the current champion stalls.
+*   **Action Classification**: The agent autonomously categorizes its moves into **Incremental Tuning**, **Within-Component Innovation**, and **Cross-Component Attention Shift**.
+*   **Stable Namespace Injection**: Explicit import binding (`exp, tanh, sqrt, log`) and heavy-duty logic cleaning to ensure 99.9% execution stability across marathon sessions.
 
 ## 📊 Optimization Observables
 The agent utilizes **14 distinct physics features** for every triplet candidate:
@@ -35,7 +37,7 @@ The agent utilizes **14 distinct physics features** for every triplet candidate:
 *   **Angular Topology:** $\Delta R_{ab}, \Delta R_{ac}, \Delta R_{bc}$ (Jet-pair angular separations).
 
 ## 📈 Scientific Discovery Timeline
-The search progressed through five distinct conceptual phases:
+The search has surpassed **32,000 unique strategy evaluations**:
 
 | Phase | Goal | Breakthrough Strategy | Efficiency | Key Innovation |
 | :--- | :--- | :--- | :--- | :--- |
@@ -43,14 +45,13 @@ The search progressed through five distinct conceptual phases:
 | **II: Kinematics** | Enforce Top resonance | `asymmetric_v3` | 0.6280 | Introduction of Asymmetric Gaussian mass priors. |
 | **III: Topology** | Extract internal decay | `ratio_strat` | 0.5870 | Use of dimensionless ratios ($m_W/m_t$) to reject noise. |
 | **IV: Cumulative** | Synergy & Refinement | `cumulative_v30k`| 0.6345 | Integration of $\eta$-position and ratio gating. |
-| **V: Marathon** | Robust Scaling | `harness_v14.5` | **Active** | Auto-correcting execution loop for 100k+ iterations. |
+| **V: Trajectory** | Search Space Mapping | `harness_v17.1` | **Active** | Formalized Action Classification & Stochastic Exploration. |
 
-## 🚀 Current Status: ACTIVE
-- **Status:** **Marathon Hybrid Exploration** (80% Refine / 20% Mutate)
-- **Current Best:** **0.6345 ± 0.015**
-- **Evaluation Engine:** `v14.5 (Hardened Physics)`
-- **Latest Report:** `marathon_session_report.md`
-- **Full History:** `champion_history.md`
+## 🚀 Current Status: ACTIVE (Plateau Exploration)
+- **Search Intensity:** ~32,000+ total evaluations.
+- **Current Best:** **0.6345 ± 0.015** (`cumulative_v30006`).
+- **Exploration Mode:** **90% Mutation / 10% Refinement** (due to exponential decay at 0.63 plateau).
+- **Primary Metrics:** Logged in `agent_trajectory.csv` and `labbook.md`.
 
 ---
-*Autonomous discovery performed on the LBL Perlmutter cluster. Optimizing for real-time L1 Trigger environments.*
+*Autonomous discovery performed on the LBL Perlmutter cluster. Aligned with literature for agentic scientific search.*
