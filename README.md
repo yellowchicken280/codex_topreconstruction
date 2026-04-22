@@ -21,11 +21,26 @@ graph TD
     G -->|Dynamic Probability Shift| A
 ```
 
-### Key Engineering Features (v17.1):
-*   **Trajectory Framework**: Formalized logging of every agent action into `agent_trajectory.csv`, capturing `ActionClass`, `Metric`, `DeltaMetric`, `Rationale`, and `Insight`.
-*   **Exponential Probability Decay**: Dynamically shifts the agent from **Refinement** (Exploitation) to **Mutation** (Exploration) as progress on the current champion stalls.
-*   **Action Classification**: The agent autonomously categorizes its moves into **Incremental Tuning**, **Within-Component Innovation**, and **Cross-Component Attention Shift**.
-*   **Stable Namespace Injection**: Explicit import binding (`exp, tanh, sqrt, log`) and heavy-duty logic cleaning to ensure 99.9% execution stability across marathon sessions.
+## 🧠 Dynamic Search Control: Exploitation vs. Exploration
+The core innovation of the v17.1 harness is the **Dynamic Refinement Rate**, which manages the trade-off between refining the current best strategy (Exploitation) and searching for radical new physics (Exploration).
+
+### 1. Exponential Probability Decay
+To prevent the agent from getting stuck on local performance plateaus, we implement an exponential decay function for the probability of selecting a "Refinement" action. As the number of iterations without a new champion (**Stale Iterations**) increases, the agent autonomously shifts its focus toward radical mutations.
+
+$$P_{refine} = P_{floor} + (P_{initial} - P_{floor}) \cdot e^{-\frac{N_{stale}}{\tau}}$$
+
+*   **Initial State**: 80% Refinement / 20% Mutation.
+*   **Plateau Behavior**: If no improvement is found for 500 rounds ($\tau=500$), the probability of refinement drops to ~35%.
+*   **Discovery Floor**: The rate floors at 10% ($P_{floor}=0.10$), ensuring that even in high-exploration mode, the agent still spends a small fraction of time "polishing" potential breakthroughs.
+
+### 2. Action Classification System
+The agent classifies every move into one of three literature-aligned categories:
+*   **Incremental Tuning**: Small parameter tweaks (e.g., shifting a Gaussian mean by 1 GeV). These are favored when $P_{refine}$ is high.
+*   **Within-Component Innovation**: New mathematical formulations for triplet scoring (e.g., switching from Gaussian to Tanh-based gating).
+*   **Cross-Component Attention Shift**: Radical shifts in strategy, such as retraining the underlying classifier or changing the fundamental variable importance (e.g., prioritizing angular flow over mass consistency).
+
+### 3. Local Refinement Branching (Promising Mutants)
+If a radical mutation (Exploration) produces a result that is within **95% of the current champion**, the harness triggers a **Local Branch**. The system temporarily suspends the global search to perform 3–5 high-intensity refinement iterations on that specific "promising mutant" to see if it can be polished into a new Global Champion.
 
 ## 📊 Optimization Observables
 The agent utilizes **14 distinct physics features** for every triplet candidate:
@@ -46,12 +61,6 @@ The search has surpassed **32,000 unique strategy evaluations**:
 | **III: Topology** | Extract internal decay | `ratio_strat` | 0.5870 | Use of dimensionless ratios ($m_W/m_t$) to reject noise. |
 | **IV: Cumulative** | Synergy & Refinement | `cumulative_v30k`| 0.6345 | Integration of $\eta$-position and ratio gating. |
 | **V: Trajectory** | Search Space Mapping | `harness_v17.1` | **Active** | Formalized Action Classification & Stochastic Exploration. |
-
-## 🚀 Current Status: ACTIVE (Plateau Exploration)
-- **Search Intensity:** ~32,000+ total evaluations.
-- **Current Best:** **0.6345 ± 0.015** (`cumulative_v30006`).
-- **Exploration Mode:** **90% Mutation / 10% Refinement** (due to exponential decay at 0.63 plateau).
-- **Primary Metrics:** Logged in `agent_trajectory.csv` and `labbook.md`.
 
 ---
 *Autonomous discovery performed on the LBL Perlmutter cluster. Aligned with literature for agentic scientific search.*
