@@ -4,7 +4,11 @@ agent_kit/.venv/
 # Agent session data (run logs, memory, intermediate artifacts)
 sessions/
 *.log
-#*.pdf
+*.pdf
+*.txt
+
+# Whitelist prompts
+!prompts/*.txt
 
 # Python cache
 __pycache__/
@@ -15,8 +19,7 @@ __pycache__/
 *.parquet
 *.root
 
-# Transcripts
-*transcript*.txt
-*transcript*.pdf
-HAICHEN WANG's Personal Meeting Room's transcript*.txt
-HAICHEN WANGs Personal Meeting Rooms transcript*.pdf
+# Transcripts and sensitive docs
+*transcript*
+Monday Agent*
+heppaperllm.pdf
