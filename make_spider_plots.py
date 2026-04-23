@@ -4,15 +4,16 @@ import numpy as np
 labels = ['Mass Precision', 'Internal Ratios', 'Angular Topology', 'Geometry (Eta)', 'Classifier Trust']
 num_vars = len(labels)
 
-# Corrected Stages matching the Efficiency Frontier Table
-# 1. Phase I: Baseline (Pure XGBoost)
+# Corrected Data Mapping (Rigorous Scale: 10=Hard Constraint, 2=Correction)
+# Phase I: Baseline (Pure XGBoost)
 baseline = [1, 1, 1, 1, 9]
-# 2. Phase II: Topology (Discovery of 0.46 Ratio)
+# Phase II: Topology (0.46 Ratio Gating)
 topology = [2, 9, 2, 2, 7]
-# 3. Phase III: Kinematics (Discovery of Asymmetric Mass Priors)
+# Phase III: Kinematics (Adding 162 GeV Mass Prior)
 kinematics = [9, 9, 3, 3, 6]
-# 4. Phase IV: Synergy (Final Geometry & Angular Polish)
-synergy = [9, 9, 8, 8, 4]
+# Phase IV: Synergy (Detector Geometry & Multi-variate Polish)
+# NOTE: Geometry is a 2 (Correction), Angular is a 5 (Moderate)
+synergy = [9, 9, 5, 2, 4]
 
 phases = [baseline, topology, kinematics, synergy]
 titles = ['Phase I: Baseline', 'Phase II: Topology', 'Phase III: Kinematics', 'Phase IV: Synergy']

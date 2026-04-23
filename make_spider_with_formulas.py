@@ -5,11 +5,11 @@ import textwrap
 labels = ['Mass Precision', 'Internal Ratios', 'Angular Topology', 'Geometry (Eta)', 'Classifier Trust']
 num_vars = len(labels)
 
-# Corrected Stages matching the Efficiency Frontier Table
+# Corrected Data Mapping
 baseline = [1, 1, 1, 1, 9]
 topology = [2, 9, 2, 2, 7]
 kinematics = [9, 9, 3, 3, 6]
-synergy = [9, 9, 8, 8, 4]
+synergy = [9, 9, 5, 2, 4] # Geometry corrected to 2
 
 phases = [baseline, topology, kinematics, synergy]
 titles = ['Phase I: Baseline', 'Phase II: Topology', 'Phase III: Kinematics', 'Phase IV: Synergy']
@@ -33,16 +33,12 @@ for i, data in enumerate(phases):
     axs[i].set_yticklabels([])
     axs[i].set_xticks(angles[:-1])
     axs[i].set_xticklabels(labels, fontsize=8, fontweight='bold')
-    
-    # Title
     axs[i].set_title(titles[i], size=16, color=colors[i], y=1.2, fontweight='black')
     
-    # Formula Annotation below the polar plot
-    # We use fig.text to place it accurately relative to each axis
     plt.figtext(0.125 + i*0.20, 0.05, textwrap.fill(formulas[i], width=30), 
                 ha='center', fontsize=10, family='monospace',
                 bbox=dict(boxstyle='round,pad=0.5', fc='white', ec=colors[i], alpha=0.1))
 
 plt.subplots_adjust(top=0.8, bottom=0.25)
 plt.savefig('strategy_spider_with_formulas.png', dpi=300)
-print('Generated strategy_spider_with_formulas.png')
+print('Generated corrected strategy_spider_with_formulas.png')
