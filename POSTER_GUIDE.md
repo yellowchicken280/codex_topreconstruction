@@ -67,14 +67,14 @@ graph TD
 ```
 
 ## 6. Key Results: The Efficiency Frontier
-The agent autonomously established a peak performance of **0.6135 ± 0.009** on the verified test set.
+The agent autonomously established a peak performance of **0.6135** on the verified test set.
 
-| Phase | Strategy | Verified Efficiency | Key Scientific Insight |
+| Phase | Strategy | Verified Eff. (±0.009) | Key Scientific Insight |
 | :--- | :--- | :--- | :--- |
 | **I: Baseline** | `baseline_bdt` | 0.4340 | Established raw XGBoost substructure ranking. |
 | **II: Topology** | `ratio_strat` | 0.5620 | Discovered the W/t mass ratio (~0.46) energy-sharing invariant. |
 | **III: Kinematics**| `asymmetric_v3` | 0.6040 | Optimized Asymmetric Gaussian mass shapes. |
-| **IV: Synergy** | `cumulative_v30k`| **0.6135 ± 0.009** | Integrated detector geometry with resonance gating. |
+| **IV: Synergy** | `cumulative_v30k`| **0.6135** | Integrated detector geometry with resonance gating. |
 
 ### The "Staircase" Frontier (Discovery Trajectory)
 ```mermaid
@@ -86,7 +86,7 @@ xychart-beta
 ```
 
 ### 6.1 Results Summary: Matching the Expert Ceiling
-The agent autonomously progressed from a 0.4340 baseline to a verified **0.6135 ± 0.009** efficiency, representing a **+18% absolute gain** in reconstruction performance. This result matched the state-of-the-art performance of expert-designed manual strategies. The convergence of 32,000+ trials onto this plateau suggests the agent has successfully identified the **Physical Information Ceiling** for the 14-dimensional kinematic feature space, effectively exhausting all mutual information available from the current jet triplet observables.
+The agent autonomously progressed from a 0.4340 baseline to a verified **0.6135** efficiency, representing a **+18% absolute gain** in reconstruction performance. This result matched the state-of-the-art performance of expert-designed manual strategies. The convergence of 32,000+ trials onto this plateau suggests the agent has successfully identified the **Physical Information Ceiling** for the 14-dimensional kinematic feature space, effectively exhausting all mutual information available from the current jet triplet observables.
 
 ## 7. Challenges & Technical Breakthroughs
 *   **Shadowing & Cache Purgation:** Overcome by forcing absolute pathing and purging `__pycache__` to ensure the physics engine executed *new* code every trial.
@@ -109,7 +109,7 @@ To prevent the search from stalling on local optima, the framework employs an **
 The results of this study demonstrate that autonomous agents can function as more than just code generators—they are capable of performing structured scientific discovery. 
 
 ### 10.1 Reaching the Information Ceiling
-The convergence of 32,000+ evaluations onto the 0.6135 ± 0.009 plateau suggests that we have effectively exhausted the **Mutual Information** available in the 14-dimensional kinematic feature set. The agent’s ability to independently rediscover the same mass-ratio and geometry synergies that human experts spent months identifying validates the framework’s reasoning capacity. It proves that the "limiting factor" in reconstruction efficiency is no longer human ingenuity, but the fundamental resolution limits of the detector simulation itself.
+The convergence of 32,000+ evaluations onto the 0.6135 plateau suggests that we have effectively exhausted the **Mutual Information** available in the 14-dimensional kinematic feature set. The agent’s ability to independently rediscover the same mass-ratio and geometry synergies that human experts spent months identifying validates the framework’s reasoning capacity. It proves that the "limiting factor" in reconstruction efficiency is no longer human ingenuity, but the fundamental resolution limits of the detector simulation itself.
 
 ### 10.2 The Agent as a Physics Supervisor: The Role of "Null-Selection Constraint (Physics Veto)s"
 A foundational discovery in our methodology was the emergence of the **"Null-Selection Constraint (Physics Veto)."** In over **44.17% of all radical mutation trials**, the agent’s proposed strategy resulted in a literal **0.0000 reconstruction efficiency**. While this might appear to be a technical failure, it is actually a vital component of the agent’s self-supervised learning process.
