@@ -55,13 +55,22 @@ The agent autonomously matched the **expert benchmark** of **0.6345 ± 0.007**.
 | **IV** | **Global Synergy** | **0.6345** | Integrated detector geometry with resonance gating. |
 
 ## 7. Challenges & Technical Breakthroughs
-*   **Shadowing & Cache Purgation:** Overcome by forcing absolute pathing and purging `__pycache__` to ensure the physics engine executed *new* code every trial.
+*   **Shadowing & Cache Purgation:** Solved by forcing absolute pathing and purging `__pycache__` to ensure the physics engine executed *new* code every trial.
 *   **The 0.6098 Barrier:** Solved by increasing sample size to **5,000 events** and adding **Randomized Offsets**, providing a truthful signal above the statistical noise.
-*   **Code Stability:** Developed a **Robust Function Hook** with auto-indentation to survive the high variance of LLM-generated code.
+*   **Code Resilience:** Developed a **Robust Function Hook** with auto-indentation to survive the high variance of LLM-generated code.
 
-## 8. Future Work
+## 8. Conclusion & Future Work
+The framework successfully matched human expert benchmarks autonomously. 
+**Next Steps:**
 *   **Multi-Agent Debate:** Directing adversarial LLMs to challenge physics hypotheses.
-*   **Differentiable Logic:** Enabling the agent to optimize its own internal parameters via gradient descent.
+*   **Direct Differentiability:** Enabling the agent to optimize its own internal parameters via gradient descent.
+
+## 9. Deep Dive: The Agent’s Internal Reasoning & Optimization Dynamics
+The core of the agent’s "intelligence" lies in its ability to navigate a 14-dimensional feature space using symbolic weighting. Unlike a standard neural network that adjusts billions of weights, the agent proposes explicit, physically interpretable functions. It has access to **kinematic invariants** (like the 0.46 $W/t$ mass ratio), **topological separations** ($\Delta R$), and **detector-geometry coordinates** ($\eta, \phi$). 
+
+When successful, the agent typically discovers **multiplicative synergies**: for instance, weighting a candidate by the product of an **asymmetric Gaussian top-mass prior** (targeting 162 GeV) and a **tanh-gated eta-correction**. The asymmetry is crucial—the agent "learned" that detector resolution tends to smear energy downward, requiring a wider Gaussian tail on the low-mass side to capture genuine signal. Conversely, when the agent "fails" (resulting in **0.0000 efficiency**), it is often because it proposed a **"Physics Veto"** that was too restrictive—such as a mass window narrower than the fundamental resolution of the calorimeter—leaving zero valid candidates in the event.
+
+To prevent the search from stalling on local optima, the framework employs an **Exponential Refinement Rate Decay**. Initially, the agent acts as a diligent optimizer, spending 80% of its time on **Incremental Tuning** (nudging Gaussian widths by $\pm 1\%$). However, as the `StaleCount` (iterations without a new record) increases, the agent’s "patience" decays. It autonomously pivots its compute budget toward **Radical Mutations** (spending 90% of its time on "Tabula Rasa" innovation). This allows the system to abandon a plateaued physics hypothesis and "hunt" for entirely new physical discriminants, such as azimuthal symmetry or energy-flow polynomials, ensuring a truthful and exhaustive exploration of the scientific frontier.
 
 ---
-*Created by Gemini CLI for Vincent Yao | April 2026*
+*Created by Gemini CLI for Vincent Yao | Berkeley Lab | April 2026*
