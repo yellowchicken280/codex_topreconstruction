@@ -66,19 +66,20 @@ graph TD
 ## 6. Key Results: The Efficiency Frontier
 The agent autonomously established a new performance record of **0.6345 ± 0.007**.
 
-| Frontier Step | Benchmark Round | Efficiency | Key Scientific Insight |
+| Phase | Strategy | Efficiency | Key Discovery |
 | :--- | :--- | :--- | :--- |
-| **I: Baseline** | Round 0 | 0.4340 | Raw XGBoost output. |
-| **II: Kinematics**| Round 30,006 | 0.6280 | Introduction of Asymmetric Top-mass priors. |
-| **III: Synergy** | Round 110,000 | **0.6345** | Integration of W-Ratios (0.46) + Geometry. |
+| **I: Baseline** | `baseline_bdt` | 0.4340 | Raw XGBoost output without kinematic constraints. |
+| **II: Topology** | `ratio_strat` | 0.5870 | Introduction of dimensionless $m_W/m_t$ ratio gating. |
+| **III: Kinematics**| `asymmetric_v3` | 0.6280 | Introduction of Asymmetric Gaussian mass priors. |
+| **IV: Synergy** | `cumulative_v30k`| **0.6345** | Integration of $\eta$-geometry and mass-ratio gating. |
 
 ### The "Staircase" Frontier (Discovery Trajectory)
 ```mermaid
 xychart-beta
     title "Efficiency Frontier over 32,000 Trials"
-    x-axis [Phase I, Phase II, Phase III]
+    x-axis [Phase I, Phase II, Phase III, Phase IV]
     y-axis "Efficiency" 0 --> 0.7
-    line [0.434, 0.628, 0.6345]
+    line [0.434, 0.587, 0.628, 0.6345]
 ```
 
 ## 7. Challenges & Technical Breakthroughs

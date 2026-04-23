@@ -31,11 +31,12 @@ The framework distinguishes between **Metric Breakthroughs** (new peak efficienc
 ## 📈 Efficiency Frontier
 The search established a clear performance frontier across 32,000+ iterations:
 
-| Frontier Step | Strategy | Benchmark Round | Efficiency | Key Discovery |
-| :--- | :--- | :--- | :--- | :--- |
-| **I: Baseline** | `baseline_bdt` | 0 | 0.4340 | Raw XGBoost output. |
-| **II: Kinematics**| `asymmetric_v3` | 10,000 | 0.6280 | Asymmetric Gaussian Top-mass priors. |
-| **III: Synergy** | `cumulative_v30k`| 43,594 | **0.6345** | Mass-Ratio (0.46) + Geometry fusion. |
+| Phase | Strategy | Efficiency | Key Discovery |
+| :--- | :--- | :--- | :--- |
+| **I: Baseline** | `baseline_bdt` | 0.4340 | Raw XGBoost output without kinematic constraints. |
+| **II: Topology** | `ratio_strat` | 0.5870 | Introduction of dimensionless $m_W/m_t$ ratio gating. |
+| **III: Kinematics**| `asymmetric_v3` | 0.6280 | Introduction of Asymmetric Gaussian mass priors. |
+| **IV: Synergy** | `cumulative_v30k`| **0.6345** | Integration of $\eta$-geometry and mass-ratio gating. |
 
 ## 📊 Optimization Observables
 The agent utilizes **14 distinct physics features** including Resonant Sub-Masses, Dimensionless Ratios ($m_{jj}/m_{123}$), and Angular Separations ($\Delta R$).
