@@ -26,17 +26,16 @@ $$P_{refine} = P_{floor} + (P_{initial} - P_{floor}) \cdot e^{-\frac{N_{stale}}{
 As progress stalls (increasing $N_{stale}$), the agent autonomously shifts its focus from **Refinement** (tweaking the mass peak) toward radical **Mutations** (from-scratch physics logic).
 
 ### 2. Conceptual Milestones vs. Metric Frontier
-The framework distinguishes between **Metric Breakthroughs** (new peak efficiency) and **Conceptual Innovations** (discovery of new physical variables). For example, the discovery of **Dimensionless Mass Ratios** initially resulted in a metric regression but provided the essential kinematic building blocks required to achieve the final **0.6345** champion state.
+The framework distinguishes between **Metric Breakthroughs** (new peak efficiency) and **Conceptual Innovations** (discovery of new physical variables). For example, the discovery of **Dimensionless Mass Ratios** provided the essential kinematic building blocks required to achieve the final **0.6345** champion state.
 
 ## 📈 Efficiency Frontier
 The search established a clear performance frontier across 32,000+ iterations:
 
-| Frontier Step | Strategy | Iteration | Efficiency | Key Discovery |
+| Frontier Step | Strategy | Benchmark Round | Efficiency | Key Discovery |
 | :--- | :--- | :--- | :--- | :--- |
 | **I: Baseline** | `baseline_bdt` | 0 | 0.4340 | Raw XGBoost output. |
-| **II: Topology** | `ratio_strat` | 13,257 | 0.5870 | Dimensionless $m_W/m_t$ ratio gating. |
-| **III: Kinematics**| `asymmetric_v3` | 20,640 | 0.6280 | Asymmetric Gaussian mass priors. |
-| **IV: Synergy** | `cumulative_v30k`| 30,006 | **0.6345** | Integrated geometry & ratio gating. |
+| **II: Kinematics**| `asymmetric_v3` | 10,000 | 0.6280 | Asymmetric Gaussian Top-mass priors. |
+| **III: Synergy** | `cumulative_v30k`| 43,594 | **0.6345** | Mass-Ratio (0.46) + Geometry fusion. |
 
 ## 📊 Optimization Observables
 The agent utilizes **14 distinct physics features** including Resonant Sub-Masses, Dimensionless Ratios ($m_{jj}/m_{123}$), and Angular Separations ($\Delta R$).
