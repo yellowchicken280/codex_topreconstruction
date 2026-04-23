@@ -66,7 +66,7 @@ graph TD
 ## 6. Key Results: The Efficiency Frontier
 The agent autonomously established a peak performance of **0.6135 ± 0.009** on the full dataset.
 
-| Phase | Strategy | Search Eff (5k) | Verified Eff (50k) | Key Discovery |
+| Phase | Strategy | Search Eff (5k) | Verified Verified Eff (6k) | Key Discovery |
 | :--- | :--- | :--- | :--- | :--- |
 | **I: Baseline** | `baseline_bdt` | 0.4340 | 0.4340 | Raw XGBoost output. |
 | **II: Topology** | `ratio_strat` | 0.5870 | 0.5620 | Dimensionless $m_W/m_t$ ratio gating. |

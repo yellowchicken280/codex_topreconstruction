@@ -31,7 +31,7 @@ The framework distinguishes between **Metric Breakthroughs** (new peak efficienc
 ## 📈 Efficiency Frontier
 The search established a clear performance frontier across 32,000+ iterations:
 
-| Phase | Strategy | Search Eff (5k) | Verified Eff (50k) | Key Discovery |
+| Phase | Strategy | Search Eff (5k) | Verified Verified Eff (6k) | Key Discovery |
 | :--- | :--- | :--- | :--- | :--- |
 | **I: Baseline** | `baseline_bdt` | 0.4340 | 0.4340 | Raw XGBoost output. |
 | **II: Topology** | `ratio_strat` | 0.5870 | 0.5620 | Dimensionless $m_W/m_t$ ratio gating. |
