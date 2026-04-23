@@ -25,7 +25,8 @@ formulas = [
 ]
 colors = ['gray', '#1f77b4', '#2ca02c', '#ff7f0e']
 
-fig, axs = plt.subplots(1, 4, figsize=(24, 9), subplot_kw=dict(polar=True))
+# Increased vertical room in figsize (9 -> 10)
+fig, axs = plt.subplots(1, 4, figsize=(24, 10), subplot_kw=dict(polar=True))
 
 # 1. Plot the Spiders
 for i, data in enumerate(phases):
@@ -41,13 +42,15 @@ for i, data in enumerate(phases):
     axs[i].set_title(titles[i], size=18, color=colors[i], y=1.25, fontweight='black')
 
 # 2. Add Perfectly Centered and Lifted Formulas
-# Using exact centers (0.2, 0.4, 0.6, 0.8) and higher y-offset (0.20)
+# Using exact centers (0.2, 0.4, 0.6, 0.8) 
+# Lifted them slightly more to give the bottom border room
 for i, formula in enumerate(formulas):
     x_center = 0.2 + i * 0.2
-    plt.figtext(x_center, 0.20, textwrap.fill(formula, width=32), 
+    plt.figtext(x_center, 0.22, textwrap.fill(formula, width=32), 
                 ha='center', fontsize=12, family='monospace', fontweight='bold',
-                bbox=dict(boxstyle='round,pad=0.7', fc='#FDFEFE', ec=colors[i], alpha=0.9, lw=1.5))
+                bbox=dict(boxstyle='round,pad=0.8', fc='#FDFEFE', ec=colors[i], alpha=0.9, lw=2.0))
 
-plt.subplots_adjust(top=0.75, bottom=0.35, left=0.1, right=0.9)
+# Significantly increased bottom adjustment (0.35 -> 0.45)
+plt.subplots_adjust(top=0.75, bottom=0.45, left=0.1, right=0.9)
 plt.savefig('strategy_spider_with_formulas.png', bbox_inches='tight')
-print('Generated PERFECTLY-ALIGNED strategy_spider_with_formulas.png')
+print('Generated RE-FRAMED strategy_spider_with_formulas.png')
