@@ -27,6 +27,7 @@ colors = ['gray', '#1f77b4', '#2ca02c', '#ff7f0e']
 
 fig, axs = plt.subplots(1, 4, figsize=(24, 8), subplot_kw=dict(polar=True))
 
+# 1. Plot the Spiders
 for i, data in enumerate(phases):
     angles = np.linspace(0, 2 * np.pi, num_vars, endpoint=False).tolist()
     data = data + [data[0]] 
@@ -38,12 +39,15 @@ for i, data in enumerate(phases):
     axs[i].set_xticks(angles[:-1])
     axs[i].set_xticklabels(labels, fontsize=9, fontweight='bold')
     axs[i].set_title(titles[i], size=18, color=colors[i], y=1.25, fontweight='black')
-    
-    # SHIFTED RIGHT (0.185 start) AND UP (0.12 height)
-    plt.figtext(0.185 + i*0.22, 0.12, textwrap.fill(formulas[i], width=35), 
+
+# 2. Add Centered Formulas
+# We use a tighter spread (0.198) and a calibrated start (0.22) to pull them away from the edges
+for i, formula in enumerate(formulas):
+    x_center = 0.22 + i * 0.188
+    plt.figtext(x_center, 0.12, textwrap.fill(formula, width=35), 
                 ha='center', fontsize=11, family='monospace', fontweight='bold',
                 bbox=dict(boxstyle='round,pad=0.6', fc='#FDFEFE', ec=colors[i], alpha=0.9, lw=1.5))
 
-plt.subplots_adjust(top=0.75, bottom=0.35)
+plt.subplots_adjust(top=0.75, bottom=0.35, left=0.1, right=0.9)
 plt.savefig('strategy_spider_with_formulas.png', bbox_inches='tight')
-print('Generated RE-ALIGNED strategy_spider_with_formulas.png')
+print('Generated CENTRALLY-ALIGNED strategy_spider_with_formulas.png')
