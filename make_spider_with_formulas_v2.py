@@ -39,11 +39,11 @@ for i, data in enumerate(phases):
     axs[i].set_xticklabels(labels, fontsize=9, fontweight='bold')
     axs[i].set_title(titles[i], size=18, color=colors[i], y=1.25, fontweight='black')
     
-    # SHIFTED FORMULAS TO THE RIGHT: moved ha center from 0.125 to 0.165 + i*0.22
-    plt.figtext(0.165 + i*0.22, 0.06, textwrap.fill(formulas[i], width=35), 
+    # SHIFTED RIGHT (0.185 start) AND UP (0.12 height)
+    plt.figtext(0.185 + i*0.22, 0.12, textwrap.fill(formulas[i], width=35), 
                 ha='center', fontsize=11, family='monospace', fontweight='bold',
                 bbox=dict(boxstyle='round,pad=0.6', fc='#FDFEFE', ec=colors[i], alpha=0.9, lw=1.5))
 
-plt.subplots_adjust(top=0.75, bottom=0.3)
+plt.subplots_adjust(top=0.75, bottom=0.35)
 plt.savefig('strategy_spider_with_formulas.png', bbox_inches='tight')
-print('Generated ULTRA-HI-RES strategy_spider_with_formulas.png')
+print('Generated RE-ALIGNED strategy_spider_with_formulas.png')
