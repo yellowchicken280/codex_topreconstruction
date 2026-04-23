@@ -64,14 +64,14 @@ graph TD
 ```
 
 ## 6. Key Results: The Efficiency Frontier
-The agent autonomously established a peak performance of **0.6135 ± 0.009** on the full dataset.
+The agent autonomously established a peak performance of **0.6135 ± 0.009** on the verified test set.
 
-| Phase | Strategy | Search Eff (5k) | Verified Verified Eff (6k) | Key Discovery |
-| :--- | :--- | :--- | :--- | :--- |
-| **I: Baseline** | `baseline_bdt` | 0.4340 | 0.4340 | Raw XGBoost output. |
-| **II: Topology** | `ratio_strat` | 0.5870 | 0.5620 | Dimensionless $m_W/m_t$ ratio gating. |
-| **III: Kinematics**| `asymmetric_v3` | 0.6280 | 0.6040 | Asymmetric Gaussian mass priors. |
-| **IV: Synergy** | `cumulative_v30k`| **0.6345** | **0.6135 ± 0.009** | Integrated geometry & ratio gating. |
+| Phase | Strategy | Verified Efficiency | Key Scientific Insight |
+| :--- | :--- | :--- | :--- |
+| **I: Baseline** | `baseline_bdt` | 0.4340 | Established raw XGBoost substructure ranking. |
+| **II: Topology** | `ratio_strat` | 0.5620 | Discovered the $0.46$ energy-sharing invariant. |
+| **III: Kinematics**| `asymmetric_v3` | 0.6040 | Optimized Asymmetric Gaussian mass shapes. |
+| **IV: Synergy** | `cumulative_v30k`| **0.6135 ± 0.009** | Integrated detector geometry with resonance gating. |
 
 ### The "Staircase" Frontier (Discovery Trajectory)
 ```mermaid
