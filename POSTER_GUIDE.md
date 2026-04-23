@@ -16,7 +16,26 @@ Prior manual optimization efforts (e.g., *top_reco_optimization_writeup.pdf*) su
 *   **The Symbolic Layer:** Our agent discovers an **Interpretable Physics Layer** that sits on top of the raw ML scores. It uses fundamental invariants (Mass, Ratios) to "supervise" the statistical predictions of the XGBoost classifier.
 *   **Separation of Concerns:** This hybrid approach allows us to keep the high-dimensional power of ML while ensuring the final selection follows human-readable physical laws discovered autonomously by the agent.
 
-## 3. Previous Studies & Benchmarks
+### 4.2 The Mutation Cycle (Tabula Rasa)
+When the agent enters Mutation mode, it performs a full "Cognitive Cycle" to discover new physics:
+
+```mermaid
+graph TD
+    A[Start Mutation Round] --> B[Ingest Labbook Memory]
+    B --> C[Formulate Physics Hypothesis]
+    C --> D[Generate Symbolic Python Logic]
+    D --> E[Inject into Perlmutter Engine]
+    E --> F[Benchmark on 5,000 Events]
+    F --> G{Breakthrough?}
+    G -->|Yes| H[Update Global Champion]
+    G -->|No| I[Perform Post-Hoc Reflection]
+    I --> J[Log Lesson to Labbook]
+    J --> K[Increment StaleCount]
+    H --> L[End Round]
+    K --> L
+```
+
+## 5. Previous Studies & Benchmarks
 This work builds on a rich history of top-quark reconstruction research:
 
 ### 3.1 The Human-Led Baseline (Phase I & II)
