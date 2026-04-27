@@ -36,7 +36,9 @@ The search established a clear performance frontier across 32,000+ iterations:
 | **I: Baseline** | `baseline_bdt` | 0.4340 | Raw XGBoost output. |
 | **II: Topology** | `ratio_strat` | 0.5620 | Dimensionless $m_W/m_t$ ratio gating. |
 | **III: Kinematics**| `asymmetric_v3` | 0.6040 | Asymmetric Gaussian mass priors. |
-| **IV: Synergy** | `cumulative_v30k`| **0.6135** | Integrated geometry & ratio gating. |
+| **IV: Synergy** | `cumulative_v30k`| 0.6135 | Integrated geometry & ratio gating. |
+| **V: Architecture** | `marathon_v20` | 0.6053 | Parametric MLP weight optimization. |
+| **VI: Autoresearch** | `research_harness` | **Active** | Deep Set fusions and Global Optimal selection heuristics. |
 
 ## 📊 Optimization Observables
 The agent utilizes **14 distinct physics features** including Resonant Sub-Masses, Dimensionless Ratios ($m_{jj}/m_{123}$), and Angular Separations ($\Delta R$).
