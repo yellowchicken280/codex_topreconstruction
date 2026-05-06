@@ -28,6 +28,8 @@ As progress stalls (increasing $N_{stale}$), the agent autonomously shifts its f
 ### 2. Conceptual Milestones vs. Metric Frontier
 The framework distinguishes between **Metric Breakthroughs** (new peak efficiency) and **Conceptual Innovations** (discovery of new physical variables). For example, the discovery of **Dimensionless Mass Ratios** provided the essential kinematic building blocks required to achieve the final **0.6135** champion state.
 
+![Efficiency Trajectory](efficiency_by_iteration.png)
+
 ## 📈 Efficiency Frontier
 The search established a clear performance frontier across 32,000+ iterations:
 
