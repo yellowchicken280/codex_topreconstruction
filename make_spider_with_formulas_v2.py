@@ -25,8 +25,8 @@ formulas = [
 ]
 colors = ['gray', '#1f77b4', '#2ca02c', '#ff7f0e']
 
-# Increased vertical room in figsize (9 -> 10)
-fig, axs = plt.subplots(1, 4, figsize=(24, 10), subplot_kw=dict(polar=True))
+# Increased height to 11 to give bottom-room
+fig, axs = plt.subplots(1, 4, figsize=(24, 11), subplot_kw=dict(polar=True))
 
 # 1. Plot the Spiders
 for i, data in enumerate(phases):
@@ -36,21 +36,28 @@ for i, data in enumerate(phases):
     
     axs[i].fill(angles, data, color=colors[i], alpha=0.3)
     axs[i].plot(angles, data, color=colors[i], linewidth=3)
-    axs[i].set_yticklabels([])
+    
+    axs[i].set_ylim(0, 10)
+    axs[i].set_rgrids([2, 4, 6, 8, 10], labels=['2','4','6','8','10'], 
+                       angle=0, fontsize=7, color='gray', alpha=0.5)
+    
+    if i > 0: axs[i].set_yticklabels([]) 
+    
     axs[i].set_xticks(angles[:-1])
     axs[i].set_xticklabels(labels, fontsize=9, fontweight='bold')
     axs[i].set_title(titles[i], size=18, color=colors[i], y=1.25, fontweight='black')
 
-# 2. Add Perfectly Centered and Lifted Formulas
-# Using exact centers (0.2, 0.4, 0.6, 0.8) 
-# Lifted them slightly more to give the bottom border room
+# 2. Add Lifted and Centered Formulas
+# Lifted to y=0.28 to sit much higher above the bottom border
 for i, formula in enumerate(formulas):
     x_center = 0.2 + i * 0.2
-    plt.figtext(x_center, 0.22, textwrap.fill(formula, width=32), 
+    plt.figtext(x_center, 0.28, textwrap.fill(formula, width=32), 
                 ha='center', fontsize=12, family='monospace', fontweight='bold',
                 bbox=dict(boxstyle='round,pad=0.8', fc='#FDFEFE', ec=colors[i], alpha=0.9, lw=2.0))
 
-# Significantly increased bottom adjustment (0.35 -> 0.45)
-plt.subplots_adjust(top=0.75, bottom=0.45, left=0.1, right=0.9)
-plt.savefig('strategy_spider_with_formulas.png', bbox_inches='tight')
-print('Generated RE-FRAMED strategy_spider_with_formulas.png')
+# Standard margin adjustment
+plt.subplots_adjust(top=0.75, bottom=0.40, left=0.1, right=0.9)
+
+# pad_inches=0.5 ensures the border is never cut off
+plt.savefig('strategy_spider_with_formulas.png', bbox_inches='tight', pad_inches=0.5)
+print('Generated SAFE-BORDER strategy_spider_with_formulas.png')
